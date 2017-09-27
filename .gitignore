@@ -99,3 +99,8 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+#vscode
+.vscode/
+.DS_Store
+*/.DS_Store
