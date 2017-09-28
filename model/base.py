@@ -7,7 +7,7 @@ author: arabian9ts
 
 import tensorflow as tf
 import numpy as np
-import vgg16_structure as vgg
+import base_structure as vgg
 
 from functools import reduce
 from activation import Activation
