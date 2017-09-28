@@ -12,7 +12,7 @@ import base_structure as vgg
 from functools import reduce
 from activation import Activation
 
-class Vgg16:
+class VGG16:
     def __init__(self):
         pass
 
