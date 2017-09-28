@@ -48,11 +48,11 @@ class VGG16:
         self.conv5_3 = self.convolution(self.conv5_2, 'conv5_3')
         self.pool5 = self.pooling(self.conv5_3, 'pool5')
 
-        self.fc6 = self.fully_connection(self.pool5, Activation.relu, 'cifar')
+        # self.fc6 = self.fully_connection(self.pool5, Activation.relu, 'fc6')
         # self.fc7 = self.fully_connection(self.fc6, Activation.relu, 'fc7')
         # self.fc8 = self.fully_connection(self.fc7, Activation.softmax, 'fc8')
 
-        self.prob = self.fc6
+        self.prob = self.pool5
 
         return self.prob
 
