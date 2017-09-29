@@ -8,18 +8,19 @@ author: arabian9ts
 import tensorflow as tf
 import numpy as np
 
-import base_structure as vgg
+import structure as vgg
 from functools import reduce
 from activation import Activation
 
-def pooling(input, name):
+def pooling(input, name, strides=None):
     """
     Args: output of just before layer
     Return: max_pooling layer
     """
-    return tf.nn.max_pool(input, ksize=vgg.ksize, strides=vgg.pool_strides, padding='SAME', name=name)
+    strides = vgg.pool_strides if not strides else strides
+    return tf.nn.max_pool(input, ksize=vgg.ksize, strides=strides, padding='SAME', name=name)
 
-def convolution(input, name, train_phase=tf.constant(True)):
+def convolution(input, name, ksize=None, strides=None, train_phase=tf.constant(True)):
     """
     Args: output of just before layer
     Return: convolution layer
@@ -27,9 +28,10 @@ def convolution(input, name, train_phase=tf.constant(True)):
     print('Current input size in convolution layer is: '+str(input.get_shape().as_list()))
     with tf.variable_scope(name):
         size = vgg.structure[name]
-        kernel = get_weight(size[0])
+        kernel = get_weight(size[0]) if not ksize else ksize
         bias = get_bias(size[1])
-        conv = tf.nn.conv2d(input, kernel, strides=vgg.conv_strides, padding='SAME', name=name)
+        strides = vgg.conv_strides if not strides else strides
+        conv = tf.nn.conv2d(input, kernel, strides=strides, padding='SAME', name=name)
         out = tf.nn.relu(tf.add(conv, bias))
     return batch_normalization(out, train_phase)
 
