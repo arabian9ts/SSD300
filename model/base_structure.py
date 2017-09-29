@@ -37,14 +37,24 @@ structure = {
     'conv5_2': [[3, 3, 512, 512], [512]],
     'conv5_3': [[3, 3, 512, 512], [512]],
 
-    # fully-connection 6
-    'fc6': [[4096, 0, 0, 0], [4096]],
+    # convolution layer 6
+    'conv6': [[3, 3, 512, 1024], [1024]],
 
-    # fully-connection 7
-    'fc7': [[4096, 0, 0, 0], [4096]],
+    # convolution layer 7
+    'conv7': [[1, 1, 1024, 1024], [1024]],
 
-    # fully-connection 8
-    'fc8': [[1000, 0, 0, 0], [1000]],
+    # convolution layer 8
+    'conv8_1': [[3, 3, 1024, 256], [256]],
+    'conv8_2': [[3, 3, 256, 512], [512]],
+
+    # convolution layer 9
+    'conv9_1': [[3, 3, 512, 128], [128]],
+    'conv9_2': [[3, 3, 128, 256], [256]],
+
+    # convolution layer 10
+    'conv10_1': [[3, 3, 256, 128], [128]],
+    'conv10_2': [[3, 3, 128, 256], [256]],
+
 }
 
 # kernel_size is constant, so defined here
