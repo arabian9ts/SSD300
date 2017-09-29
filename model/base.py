@@ -11,13 +11,24 @@ import numpy as np
 from tf_material import *
 
 class VGG16:
+    """
+    This is presented by VGG team in oxford Univ.
+    """
+
     def __init__(self):
         pass
 
     def build(self, input, is_training=True):
         """
         input is the placeholder of tensorflow
-        build() assembles vgg16 network
+        build func assembles vgg16 network
+
+        Args:
+            input: images batch
+            is_training: is this training?
+
+        Returns:
+            last output of this network sequence.
         """
 
         # flag: is_training? for tensorflow-graph
