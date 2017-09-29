@@ -2,7 +2,7 @@
 implementation of ssd network with TensorFlow
 
 SSD model has own network, loss.
-Because of SSD algo, use default box, so Box-func rewuired.
+Because of SSD algo, use default box, so Box-func required.
 
 ** Default Box **
 Each pixel in feature-map extracted from original-images have 3 boxes(defalut boxes).
@@ -52,9 +52,33 @@ class SSD(VGG16):
         super()
 
     def build(self, input, is_training=True):
+        """
+        SSD network by use of VGG16.
+        This assembles SSD network by extending VGG16 class.
+
+        Args:
+            input: images batch
+            is_training: is this training?
+
+        Returns:
+            last output of this network sequence.
+        """
+
+        # assenble base network
         base = super().build(input, is_training)
         return base
 
+
+    def loss():
+        """
+        loss func defined as Loss = (Loss_conf + a*Loss_loc) / N
+        In here, compute confidence loss and location loss,
+        finally, total loss.
+
+        Returns: total loss per batch
+        """
+
+        return
 
 
 
