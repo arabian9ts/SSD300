@@ -16,4 +16,5 @@ def generate_boxes():
 
     Returns: generated default boxes list
     """
+    
     return

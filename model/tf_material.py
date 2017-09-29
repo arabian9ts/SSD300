@@ -14,17 +14,28 @@ from activation import Activation
 
 def pooling(input, name, strides=None):
     """
-    Args: output of just before layer
-    Return: max_pooling layer
+    Args:
+        input: output of just before layer
+        name: layer name
+        strides: special strides list (optional)
+    Return:
+        max_pooling layer
     """
+
     strides = pool_strides if not strides else strides
     return tf.nn.max_pool(input, ksize=kernel_size, strides=strides, padding='SAME', name=name)
 
 def convolution(input, name, ksize=None, strides=None, train_phase=tf.constant(True)):
     """
-    Args: output of just before layer
-    Return: convolution layer
+    Args: 
+        input: output of just before layer
+        name: layer name
+        ksize: special kernel list (optional)
+        train_phase: is this training? (tensorflow placeholder typed bool)
+    Return: 
+        convolution layer
     """
+
     print('Current input size in convolution layer is: '+str(input.get_shape().as_list()))
     with tf.variable_scope(name):
         size = structure[name]
@@ -37,9 +48,14 @@ def convolution(input, name, ksize=None, strides=None, train_phase=tf.constant(T
 
 def fully_connection(input, activation, name, train_phase=tf.constant(True)):
     """
-    Args: output of just before layer
+    Args: 
+        input: output of just before layer
+        activation: activation method in this layer (enum)
+        name: layer name
+        train_phase: is this training? (tensorflow placeholder typed bool)
     Return: fully_connected layer
     """
+
     size = structure[name]
     with tf.variable_scope(name):
         shape = input.get_shape().as_list()
@@ -64,10 +80,15 @@ def batch_normalization(input,  train_phase=tf.constant(True)):
         * Reduce DropOut
         * Sparse Dependencies on Initial-value(e.g. weight, bias)
         * Accelerate Convergence
+        * Enable to increase training rate
 
-    Args: output of convolution or fully-connection layer
-    Returns: Normalized batch
+    Args:
+        input: output of convolution or fully-connection layer
+        train_phase: is this training? (tensorflow placeholder typed bool)
+    Returns: 
+        Normalized batch
     """
+
     decay=0.9
     eps=1e-5
     shape = input.get_shape().as_list()
@@ -94,19 +115,21 @@ def batch_normalization(input,  train_phase=tf.constant(True)):
 
 def get_weight(shape):
     """
-    generate weight tensor
+    generate weight tensor based on Normal-Distribution
 
     Args: weight size
     Return: initialized weight tensor
     """
+
     initial = tf.truncated_normal(shape, 0.0, 1.0) * 0.01
     return tf.Variable(initial)
 
 def get_bias(shape):
     """
-    generate bias tensor
+    generate bias tensor based on Normal-Distribution
 
     Args: bias size
     Return: initialized bias tensor
     """
+    
     return tf.Variable(tf.truncated_normal(shape, 0.0, 1.0) * 0.01)
