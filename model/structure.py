@@ -58,7 +58,7 @@ structure = {
 }
 
 # default kernel_size
-ksize = [1, 2, 2, 1,]
+kernel_size = [1, 2, 2, 1,]
 
 # default convolution-layer-strides
 conv_strides = [1, 1, 1, 1,]
