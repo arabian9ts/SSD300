@@ -44,24 +44,24 @@ structure = {
     'conv7': [[1, 1, 1024, 1024], [1024]],
 
     # convolution layer 8
-    'conv8_1': [[3, 3, 1024, 256], [256]],
+    'conv8_1': [[1, 1, 1024, 256], [256]],
     'conv8_2': [[3, 3, 256, 512], [512]],
 
     # convolution layer 9
-    'conv9_1': [[3, 3, 512, 128], [128]],
+    'conv9_1': [[1, 1, 512, 128], [128]],
     'conv9_2': [[3, 3, 128, 256], [256]],
 
     # convolution layer 10
-    'conv10_1': [[3, 3, 256, 128], [128]],
+    'conv10_1': [[1, 1, 256, 128], [128]],
     'conv10_2': [[3, 3, 128, 256], [256]],
 
 }
 
-# kernel_size is constant, so defined here
+# default kernel_size
 ksize = [1, 2, 2, 1,]
 
-# convolution-layer-strides is already below
+# default convolution-layer-strides
 conv_strides = [1, 1, 1, 1,]
 
-# pooling-layer-strides is already below
+# default pooling-layer-strides
 pool_strides = [1, 2, 2, 1,]
