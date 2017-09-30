@@ -12,7 +12,7 @@ from structure import *
 from functools import reduce
 from activation import Activation
 
-def pooling(input, name, strides=None):
+def pooling(input, name, stride=None):
     """
     Args:
         input: output of just before layer
@@ -22,15 +22,18 @@ def pooling(input, name, strides=None):
         max_pooling layer
     """
 
-    strides = pool_strides if not strides else strides
+    strides = pool_strides
+    if stride:
+        strides[1:3] = [stride, stride]
+
     return tf.nn.max_pool(input, ksize=kernel_size, strides=strides, padding='SAME', name=name)
 
-def convolution(input, name, ksize=None, strides=None, train_phase=tf.constant(True)):
+def convolution(input, name, ksize=None, stride=None, train_phase=tf.constant(True)):
     """
     Args: 
         input: output of just before layer
         name: layer name
-        ksize: special kernel list (optional)
+        ksize: special kernel size (optional)
         train_phase: is this training? (tensorflow placeholder typed bool)
     Return: 
         convolution layer
@@ -39,9 +42,17 @@ def convolution(input, name, ksize=None, strides=None, train_phase=tf.constant(T
     print('Current input size in convolution layer is: '+str(input.get_shape().as_list()))
     with tf.variable_scope(name):
         size = structure[name]
-        kernel = get_weight(size[0]) if not ksize else ksize
+
+        kernel_size = size[0]
         bias = get_bias(size[1])
-        strides = conv_strides if not strides else strides
+        if ksize:
+            kernel_size[0:2] = [ksize, ksize]
+        kernel = get_weight(kernel_size)
+
+        strides = conv_strides
+        if stride:
+            strides[1:3] = [stride, stride]
+
         conv = tf.nn.conv2d(input, kernel, strides=strides, padding='SAME', name=name)
         out = tf.nn.relu(tf.add(conv, bias))
     return batch_normalization(out, train_phase)
@@ -131,5 +142,5 @@ def get_bias(shape):
     Args: bias size
     Return: initialized bias tensor
     """
-    
+
     return tf.Variable(tf.truncated_normal(shape, 0.0, 1.0) * 0.01)
