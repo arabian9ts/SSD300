@@ -45,6 +45,7 @@ import tensorflow as tf
 import numpy as np
 
 from base import VGG16
+from tf_material import *
 
 class SSD(VGG16):
 
@@ -61,12 +62,39 @@ class SSD(VGG16):
             is_training: is this training?
 
         Returns:
-            last output of this network sequence.
+            feature maps
         """
 
         # assenble base network
-        base = super().build(input, is_training)
-        return base
+        self.base = super().build(input, is_training)
+        
+        self.conv6 = convolution(self.base, 'conv6', ksize=3)
+        self.conv7 = convolution(self.conv6, 'conv7', ksize=1)
+
+        self.conv8_1 = convolution(self.conv7, 'conv8_1', ksize=1)
+        self.conv8_2 = convolution(self.conv8_1, 'conv8_2', ksize=3, stride=2)
+
+        self.conv9_1 = convolution(self.conv8_2, 'conv9_1', ksize=1)
+        self.conv9_2 = convolution(self.conv9_1, 'conv9_2', ksize=3, stride=2)
+
+        self.conv10_1 = convolution(self.conv9_2, 'conv10_1', ksize=1)
+        self.conv10_2 = convolution(self.conv10_1, 'conv10_2', ksize=3, stride=2)
+
+        self.conv11_1 = convolution(self.conv10_2, 'conv11_1')
+        self.conv11_2 = convolution(self.conv11_1, 'conv11_2')
+
+        print('================== Feature Map Below ==================')
+
+        # extra feature maps
+        self.map1 = convolution(self.base, 'map1')
+        self.map2 = convolution(self.conv7, 'map2')
+        self.map3 = convolution(self.conv8_2, 'map3')
+        self.map4 = convolution(self.conv9_2, 'map4')
+        self.map5 = convolution(self.conv10_2, 'map5')
+        self.map6 = convolution(self.conv11_2, 'map6')
+
+        
+        return [self.map1, self.map2, self.map3, self.map4, self.map5, self.map6]
 
 
     def loss():
@@ -82,5 +110,5 @@ class SSD(VGG16):
 
 
 
-input = tf.placeholder(shape=[None, 32, 32, 3], dtype=tf.float32)
+input = tf.placeholder(shape=[None, 300, 300, 3], dtype=tf.float32)
 fmap = SSD().build(input, is_training=True)
