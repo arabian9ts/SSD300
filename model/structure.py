@@ -5,6 +5,8 @@ date: 9/17
 author: arabian9ts
 """
 
+from policy import *
+
 
 # structure of convolution and pooling layer up to fully-connection layer
 """
@@ -54,6 +56,28 @@ structure = {
     # convolution layer 10
     'conv10_1': [[1, 1, 256, 128], [128]],
     'conv10_2': [[3, 3, 128, 256], [256]],
+
+    # convolution layer 11
+    'conv11_1': [[1, 1, 256, 128], [128]],
+    'conv11_2': [[3, 3, 128, 256], [256]],
+
+    # feature map 1
+    'map1': [[3, 3, 512, boxes[0]*(classes+4)], [boxes[0]*(classes+4)]],
+
+    # feature map 2
+    'map2': [[3, 3, 1024, boxes[1]*(classes+4)], [boxes[1]*(classes+4)]],
+
+    # feature map 3
+    'map3': [[3, 3, 512, boxes[2]*(classes+4)], [boxes[2]*(classes+4)]],
+
+    # feature map 4
+    'map4': [[3, 3, 256, boxes[3]*(classes+4)], [boxes[3]*(classes+4)]],
+
+    # feature map 5
+    'map5': [[3, 3, 256, boxes[4]*(classes+4)], [boxes[4]*(classes+4)]],
+
+    # feature map 6
+    'map6': [[1, 1, 256, boxes[5]*(classes+4)], [boxes[5]*(classes+4)]],
 
 }
 
