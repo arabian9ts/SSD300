@@ -21,12 +21,12 @@ def smooth_L1(x):
 def intersection(rect1, rect2):
     """
     intersecton of units
-    rect is defined as [ top_left_x, top_left_y, width, height ]
+    rect is defined as [ top_left_x, top_left_y, height, width ]
     """
     top = max(rect1[1], rect2[1])
     left = max(rect1[0], rect2[0])
-    right = min(rect1[0] + rect1[2], rect2[0] + rect2[2])
-    bottom = min(rect1[1] + rect1[3], rect2[1] + rect2[3])
+    right = min(rect1[0] + rect1[3], rect2[0] + rect2[3])
+    bottom = min(rect1[1] + rect1[2], rect2[1] + rect2[2])
 
     if bottom > top and right > left:
         return (bottom-top)*(right-left)
@@ -57,5 +57,5 @@ print(smooth_L1(1))
 print(smooth_L1(0.1))
 
 rect1 = [0, 0, 10, 10]
-rect2 = [5, 5, 10, 10]
+rect2 = [5, 0, 5, 10]
 print(intersection(rect1, rect2))
