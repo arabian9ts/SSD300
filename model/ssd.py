@@ -45,6 +45,7 @@ import tensorflow as tf
 import numpy as np
 
 from base import VGG16
+from default_box import *
 from tf_material import *
 
 class SSD(VGG16):
@@ -101,7 +102,18 @@ class SSD(VGG16):
             width = output_size[2]
             pred.append(tf.reshape(fmap, [-1, width*height*boxes[i], classes+4]))
 
-        print(pred)
+        concatenated = tf.concat(pred, axis=1)
+        
+        pred_confs = concatenated[:,:,:classes]
+        pred_locs = concatenated[:,:,classes:]
+
+        print('concatenated: '+str(concatenated))
+        print('confs: '+str(pred_confs.get_shape().as_list()))
+        print('locs: '+str(pred_locs.get_shape().as_list()))
+                
+        self.default_boxes = generate_boxes([map.get_shape().as_list() for map in feature_maps])
+        print(len(self.default_boxes))
+
         return pred
 
 
