@@ -85,16 +85,24 @@ class SSD(VGG16):
 
         print('================== Feature Map Below ==================')
 
+        feature_maps = []
         # extra feature maps
-        self.map1 = convolution(self.base, 'map1')
-        self.map2 = convolution(self.conv7, 'map2')
-        self.map3 = convolution(self.conv8_2, 'map3')
-        self.map4 = convolution(self.conv9_2, 'map4')
-        self.map5 = convolution(self.conv10_2, 'map5')
-        self.map6 = convolution(self.conv11_2, 'map6')
+        feature_maps.append(convolution(self.base, 'map1'))
+        feature_maps.append(convolution(self.conv7, 'map2'))
+        feature_maps.append(convolution(self.conv8_2, 'map3'))
+        feature_maps.append(convolution(self.conv9_2, 'map4'))
+        feature_maps.append(convolution(self.conv10_2, 'map5'))
+        feature_maps.append(convolution(self.conv11_2, 'map6'))
 
-        
-        return [self.map1, self.map2, self.map3, self.map4, self.map5, self.map6]
+        pred = []
+        for i, fmap in zip(range(len(feature_maps)), feature_maps):
+            output_size = fmap.get_shape().as_list()
+            height = output_size[1]
+            width = output_size[2]
+            pred.append(tf.reshape(fmap, [-1, width*height*boxes[i], classes+4]))
+
+        print(pred)
+        return pred
 
 
     def loss():
