@@ -17,6 +17,7 @@ def smooth_L1(x):
 
     return y
 
+
 def intersection(rect1, rect2):
     """
     intersecton of units
@@ -31,6 +32,25 @@ def intersection(rect1, rect2):
         return (bottom-top)*(right-left)
 
     return 0
+
+
+def jaccard(rect1, rect2):
+    """
+    Jaccard index.
+    Jaccard index is defined as #(A∧B) / #(A∨B)
+    """
+    rect1_ = [x if x >= 0 else 0 for x in rect1]
+    rect2_ = [x if x >= 0 else 0 for x in rect2]
+    s = rect1_[2]*rect1_[3] + rect2_[2]*rect2_[3]
+
+    # rect1 and rect2 => A∧B
+    intersect = intersection(rect1_, rect2_)
+
+    # rect1 or rect2 => A∨B
+    union = s - intersect
+
+    # A∧B / A∨B
+    return intersect / union
 
 
 print(smooth_L1(1))
