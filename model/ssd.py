@@ -16,7 +16,7 @@ SSD uses specific loss using locational_loss and confidential_loss.
 Note:
     The number of Default Box:
         [ 3, 6, 6, 6, 6, 6, ]
-        <-> from [ conv5_3,  ]
+        <-> from [ base, conv7, conv8_2, conv9_2, conv10_2, conv11_2 ]
 
     Default Box params:
         loc = ( center_x, center_y, box_height, box_width )
