@@ -68,20 +68,20 @@ class SSD(VGG16):
         # assenble base network
         self.base = super().build(input, is_training)
         
-        self.conv6 = convolution(self.base, 'conv6', ksize=3)
-        self.conv7 = convolution(self.conv6, 'conv7', ksize=1)
+        self.conv6 = convolution(self.base, 'conv6')
+        self.conv7 = convolution(self.conv6, 'conv7')
 
-        self.conv8_1 = convolution(self.conv7, 'conv8_1', ksize=1)
+        self.conv8_1 = convolution(self.conv7, 'conv8_1')
         self.conv8_2 = convolution(self.conv8_1, 'conv8_2', ksize=3, stride=2)
 
-        self.conv9_1 = convolution(self.conv8_2, 'conv9_1', ksize=1)
+        self.conv9_1 = convolution(self.conv8_2, 'conv9_1')
         self.conv9_2 = convolution(self.conv9_1, 'conv9_2', ksize=3, stride=2)
 
-        self.conv10_1 = convolution(self.conv9_2, 'conv10_1', ksize=1)
+        self.conv10_1 = convolution(self.conv9_2, 'conv10_1')
         self.conv10_2 = convolution(self.conv10_1, 'conv10_2', ksize=3, stride=2)
 
         self.conv11_1 = convolution(self.conv10_2, 'conv11_1')
-        self.conv11_2 = convolution(self.conv11_1, 'conv11_2')
+        self.conv11_2 = convolution(self.conv11_1, 'conv11_2', stride=3)
 
         print('================== Feature Map Below ==================')
 
