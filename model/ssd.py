@@ -26,7 +26,7 @@ Note:
         N is the number of matched default boxes.
         If N==0 -> Loss = 0
 
-    Box scale(meaning size):
+    Box scale(meaning size scaling):
         s_k = s_min + (s_max - s_min) * (k - 1.0) / (m - 1.0), m = 6
 
     Box scale ratio(height and width scaling):
