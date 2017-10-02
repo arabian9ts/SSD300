@@ -86,14 +86,14 @@ class SSD(VGG16):
 
         print('================== Feature Map Below ==================')
 
-        feature_maps = []
+        self.feature_maps = []
         # extra feature maps
-        feature_maps.append(convolution(self.base, 'map1'))
-        feature_maps.append(convolution(self.conv7, 'map2'))
-        feature_maps.append(convolution(self.conv8_2, 'map3'))
-        feature_maps.append(convolution(self.conv9_2, 'map4'))
-        feature_maps.append(convolution(self.conv10_2, 'map5'))
-        feature_maps.append(convolution(self.conv11_2, 'map6'))
+        self.feature_maps.append(convolution(self.base, 'map1'))
+        self.feature_maps.append(convolution(self.conv7, 'map2'))
+        self.feature_maps.append(convolution(self.conv8_2, 'map3'))
+        self.feature_maps.append(convolution(self.conv9_2, 'map4'))
+        self.feature_maps.append(convolution(self.conv10_2, 'map5'))
+        self.feature_maps.append(convolution(self.conv11_2, 'map6'))
 
         pred = []
         for i, fmap in zip(range(len(feature_maps)), feature_maps):
@@ -104,8 +104,8 @@ class SSD(VGG16):
 
         concatenated = tf.concat(pred, axis=1)
         
-        pred_confs = concatenated[:,:,:classes]
-        pred_locs = concatenated[:,:,classes:]
+        self.pred_confs = concatenated[:,:,:classes]
+        self.pred_locs = concatenated[:,:,classes:]
 
         print('concatenated: '+str(concatenated))
         print('confs: '+str(pred_confs.get_shape().as_list()))
