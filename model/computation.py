@@ -5,18 +5,6 @@ date: 10/1
 author: arabian9ts
 """
 
-def smooth_L1(x):
-    """
-    smooth L1
-    """
-    y = 0
-    if abs(x) < 1:
-        y = 0.5 * x**2
-    else:
-        y = abs(x) - 0.5
-
-    return y
-
 
 def intersection(rect1, rect2):
     """
@@ -53,9 +41,6 @@ def jaccard(rect1, rect2):
     # A∧B / A∨B
     return intersect / union
 
-
-print(smooth_L1(1))
-print(smooth_L1(0.1))
 
 rect1 = [0, 0, 10, 10]
 rect2 = [5, 0, 5, 10]

@@ -96,7 +96,7 @@ class SSD(VGG16):
         self.feature_maps.append(convolution(self.conv11_2, 'map6'))
 
         pred = []
-        for i, fmap in zip(range(len(feature_maps)), feature_maps):
+        for i, fmap in zip(range(len(self.feature_maps)), self.feature_maps):
             output_size = fmap.get_shape().as_list()
             height = output_size[1]
             width = output_size[2]
@@ -108,27 +108,59 @@ class SSD(VGG16):
         self.pred_locs = concatenated[:,:,classes:]
 
         print('concatenated: '+str(concatenated))
-        print('confs: '+str(pred_confs.get_shape().as_list()))
-        print('locs: '+str(pred_locs.get_shape().as_list()))
-                
-        self.default_boxes = generate_boxes([map.get_shape().as_list() for map in feature_maps])
-        print(len(self.default_boxes))
+        print('confs: '+str(self.pred_confs.get_shape().as_list()))
+        print('locs: '+str(self.pred_locs.get_shape().as_list()))
 
-        return pred
+        return self.feature_maps
 
 
-    def loss():
+    def smooth_L1(self, x):
+        """
+        smooth L1 loss func
+
+        Args: the list of x range
+        Returns: result tensor
+        """
+        sml1 = tf.multiply(0.5, tf.pow(x, 2.0))
+        sml2 = tf.subtract(tf.abs(x), 0.5)
+        cond = tf.less(tf.abs(x), 1.0)
+
+        return tf.where(cond, sml1, sml2)
+
+
+    def loss(self, pred_confs, pred_locs, total_boxes):
         """
         loss func defined as Loss = (Loss_conf + a*Loss_loc) / N
         In here, compute confidence loss and location loss,
         finally, total loss.
 
-        Returns: total loss per batch
+        Args:
+            pred_confs: predicated confidences => probability distribution
+            pred_locs: predicted locations => predicted box
+            total_boxes: total size of boxes => len(self.default_boxes)
+        Returns:
+            total loss per batch
         """
 
-        return
+        gt_labels = tf.placeholder(shape=[None, total_boxes], dtype=tf.int32)
+        gt_boxes = tf.placeholder(shape=[None, total_boxes, 4], dtype=tf.float32)
+        pos = tf.placeholder(shape=[None, total_boxes], dtype=tf.float32)
+        neg = tf.placeholder(shape=[None, total_boxes], dtype=tf.float32)
+
+        loss_loc = tf.reduce_sum(self.smooth_L1(gt_boxes - pred_locs), reduction_indices=2) * pos
+        loss_loc = tf.reduce_sum(loss_loc, reduction_indices=1) / (1e-5 + tf.reduce_sum(pos, reduction_indices = 1))
+
+        loss_conf = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=pred_confs, labels=gt_labels) * (pos + neg)
+        loss_conf = tf.reduce_sum(loss_conf, reduction_indices=1) / (1e-5 + tf.reduce_sum((pos + neg), reduction_indices = 1))
+
+        return tf.reduce_sum(loss_conf + loss_loc)
 
 
 
 input = tf.placeholder(shape=[None, 300, 300, 3], dtype=tf.float32)
-fmap = SSD().build(input, is_training=True)
+ssd = SSD()
+fmaps = ssd.build(input, is_training=True)
+boxes = generate_boxes([map.get_shape().as_list() for map in fmaps])
+print(len(boxes))
+
+loss = ssd.loss(ssd.pred_confs, ssd.pred_locs, len(boxes))
