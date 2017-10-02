@@ -21,6 +21,7 @@ def smooth_L1(x):
 def intersection(rect1, rect2):
     """
     intersecton of units
+    compute boarder line top, left, right and bottom.
     rect is defined as [ top_left_x, top_left_y, height, width ]
     """
     top = max(rect1[1], rect2[1])
