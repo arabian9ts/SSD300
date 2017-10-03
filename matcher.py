@@ -8,7 +8,9 @@ author: arabian9ts
 class Matcher:
     def __init__(self, fmap_shapes, default_boxes):
         if not fmap_shapes:
-            pass
+            raise NotSpecifiedException('fmap_shapes', 'Matcher __init__')
+        if not default_boxes:
+            raise NotSpecifiedException('default_boxes', 'Matcher __init__')
         
     def apply_prediction(pred_confs, pred_locs, fmap_shapes):
         return 
