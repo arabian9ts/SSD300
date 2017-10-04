@@ -44,9 +44,9 @@ author: arabian9ts
 import tensorflow as tf
 import numpy as np
 
-from base import VGG16
-from default_box import *
-from tf_material import *
+from model.base import VGG16
+from model.default_box import *
+from model.tf_material import *
 
 class SSD(VGG16):
 
@@ -61,7 +61,6 @@ class SSD(VGG16):
         Args:
             input: images batch
             is_training: is this training?
-
         Returns:
             feature maps
         """
@@ -154,13 +153,3 @@ class SSD(VGG16):
         loss_conf = tf.reduce_sum(loss_conf, reduction_indices=1) / (1e-5 + tf.reduce_sum((pos + neg), reduction_indices = 1))
 
         return tf.reduce_sum(loss_conf + loss_loc)
-
-
-
-input = tf.placeholder(shape=[None, 300, 300, 3], dtype=tf.float32)
-ssd = SSD()
-fmaps = ssd.build(input, is_training=True)
-boxes = generate_boxes([map.get_shape().as_list() for map in fmaps])
-print(len(boxes))
-
-loss = ssd.loss(ssd.pred_confs, ssd.pred_locs, len(boxes))

@@ -5,7 +5,7 @@ date: 9/17
 author: arabian9ts
 """
 
-from policy import *
+from model.policy import *
 
 
 # structure of convolution and pooling layer up to fully-connection layer

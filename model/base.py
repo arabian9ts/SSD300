@@ -8,7 +8,7 @@ author: arabian9ts
 import tensorflow as tf
 import numpy as np
 
-from tf_material import *
+from model.tf_material import *
 
 class VGG16:
     """
@@ -26,7 +26,6 @@ class VGG16:
         Args:
             input: images batch
             is_training: is this training?
-
         Returns:
             last output of this network sequence.
         """

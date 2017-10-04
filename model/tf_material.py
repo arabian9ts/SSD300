@@ -8,9 +8,9 @@ author: arabian9ts
 import tensorflow as tf
 import numpy as np
 
-from structure import *
 from functools import reduce
-from activation import Activation
+from model.structure import *
+from model.activation import Activation
 
 def pooling(input, name, stride=None):
     """
