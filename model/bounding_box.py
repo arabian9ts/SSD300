@@ -26,7 +26,7 @@ class Box:
         if not (locs and prob and index):
             raise NotSpecifiedException('some args', '__init__ @Box')
             
-        if isinstance(locs, list) && 4 == len(locs):
+        if isinstance(locs, list) and 4 == len(locs):
             self.locs = locs
         if isinstance(prob, float):
             self.prob = prob
