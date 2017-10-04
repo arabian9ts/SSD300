@@ -6,7 +6,7 @@ author: arabian9ts
 """
 
 import numpy as np
-from policy import *
+from model.policy import *
 
 def scale(k):
     """

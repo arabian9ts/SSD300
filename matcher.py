@@ -9,9 +9,17 @@ import numpy as np
 
 from model.policy import *
 from model.exception import *
+from model.bounding_box import Box
 
 class Matcher:
     def __init__(self, fmap_shapes, default_boxes):
+        """
+        initializer require feature-map shapes and default boxes
+
+        Args:
+            fmap_shapes: feature-map's shape
+            default_boxes: generated default boxes
+        """
         if not fmap_shapes:
             raise NotSpecifiedException('fmap_shapes', 'Matcher __init__')
         if not default_boxes:
@@ -21,6 +29,15 @@ class Matcher:
         self.default_boxes = default_boxes
         
     def apply_prediction(self, pred_confs, pred_locs):
+        """
+        apply prediction to boxes(shaping boxes).
+
+        Args:
+            pred_confs: predicated confidences
+            pred_locs: predicated locations
+        Returns:
+            confidences list
+        """
         index = 0
         confs = []
         anchors = [
@@ -45,11 +62,10 @@ class Matcher:
                         prob = np,amax(np.exp(pred_conf) / (np.sum(np.exp(pred_conf)) + 1e-5))
                         pred_label = np.argmax(pred_conf)
 
-                        confs.append((box, prob, pred_label))
+                        confs.append(Box(box, prob, pred_label))
                         index += 1
         
-        return anchors
+        return confs
 
 
 matcher = Matcher([1, 1, 1, 1], [1, 1])
-# print(matcher.apply_prediction(None, None))
