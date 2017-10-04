@@ -8,6 +8,7 @@ author: arabian9ts
 import numpy as np
 
 from model.policy import *
+from model.exception import *
 
 class Matcher:
     def __init__(self, fmap_shapes, default_boxes):
@@ -50,14 +51,5 @@ class Matcher:
         return anchors
 
 
-
-class NotSpecifiedException(Exception):
-    def __init__(self, name, epicenter):
-        self.name = name
-        self.epicenter = epicenter
-    def __str__(self):
-        return ('Parameter "{0.name}" is not specified in "{0.epicenter}"'.format(self))
-
-
 matcher = Matcher([1, 1, 1, 1], [1, 1])
-print(matcher.apply_prediction(None, None))
+# print(matcher.apply_prediction(None, None))
