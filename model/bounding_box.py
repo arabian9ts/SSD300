@@ -6,7 +6,7 @@ date: 10/4
 author: arabian9ts
 """
 
-from exception import *
+from model.exception import *
 
 class Box:
     _locs = []
