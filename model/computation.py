@@ -40,8 +40,3 @@ def jaccard(rect1, rect2):
 
     # A∧B / A∨B
     return intersect / union
-
-
-rect1 = [0, 0, 10, 10]
-rect2 = [5, 0, 5, 10]
-print(intersection(rect1, rect2))
