@@ -9,6 +9,7 @@ import numpy as np
 
 from model.policy import *
 from model.exception import *
+from model.computation import *
 from model.bounding_box import Box
 
 class Matcher:
@@ -36,7 +37,7 @@ class Matcher:
             pred_confs: predicated confidences
             pred_locs: predicated locations
         Returns:
-            confidences list
+            confidences list and anchor boxes
         """
         index = 0
         confs = []
@@ -65,7 +66,44 @@ class Matcher:
                         confs.append(Box(box, prob, pred_label))
                         index += 1
         
-        return confs
+        return confs, anchors
 
+    def matching(self, pred_confs, pred_locs, actual_labels, actual_locs):
+        """
+        match default boxes and bouding boxes.
 
-matcher = Matcher([1, 1, 1, 1], [1, 1])
+        Args:
+            pred_confs: oredicated confidences
+            pred_locs: predicated locations
+            actual_labels: answer class labels
+            actual_locs: answer box locations
+        Returns: 
+        """
+        
+        pos = 0
+        matches = [
+            [[[None for _ in range(boxes[i])]
+            for _ in range(self.fmap_shapes[i][2])]
+            for _ in range(self.fmap_shapes[i][1])]
+            for i in range(len(boxes))
+        ]
+        
+        # compute jaccard for each default box
+        for gt_label, gt_box in zip(actual_labels, actual_locs):
+            index = 0
+            for i in range(len(boxes)):
+                for y in range(self.fmap_shapes[i][1]):
+                    for x in range(self.fmap_shapes[i][2]):
+                        for j in range(boxes[i]):
+                            jacc = jaccard(gt_box, self.default_boxes[index])
+                            index += 1
+
+                            if 0.5 <= jacc:
+                                # matches[i][y][x][j] = Box(gt_box, gt_label)
+                                pos += 1
+
+        neg = 0
+        negmax = pos * 3
+
+        return pos
+                                
