@@ -20,5 +20,5 @@ def load_image(path):
     """
     img = skimage.io.imread(path)
     img = img / 255.
-    resized_img = skimage.transform.resize(img, (224, 224))
+    resized_img = skimage.transform.resize(img, (300, 300))
     return numpy.array(resized_img, dtype=numpy.float32)
