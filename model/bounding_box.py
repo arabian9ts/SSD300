@@ -29,8 +29,10 @@ class Box:
         if isinstance(index, int):
             self.index = index
 
+    @property
     def loc(self):
         return self._loc
 
+    @property
     def index(self):
         return self._index
