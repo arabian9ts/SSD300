@@ -28,6 +28,7 @@ class Matcher:
 
         self.fmap_shapes = fmap_shapes
         self.default_boxes = default_boxes
+
         
     def apply_prediction(self, pred_confs, pred_locs):
         """
@@ -67,43 +68,77 @@ class Matcher:
                         index += 1
         
         return confs, anchors
+        
+
+    def extract_highest_indicies(self, pred_confs, max_length):
+        loss_confs = []
+
+        for pred_conf in pred_confs:
+            pred = np.exp(pred_conf) / (np.sum(np.exp(pred_conf)) + 1e-5)
+            loss_confs.append(np.amax(pred))
+
+        size = min(len(loss_confs), max_length)
+        indicies = np.argpartition(loss_confs, -size)[-size:]
+
+        return indicies
+
 
     def matching(self, pred_confs, pred_locs, actual_labels, actual_locs):
         """
         match default boxes and bouding boxes.
+        matching computes pos and neg count for the computation of loss.
+        now, the most noting point is that it is not important that 
+        whether class label is correctly predicted.
+        class label loss is evaluated by loss_conf
 
         Args:
-            pred_confs: oredicated confidences
+            pred_confs: predicated confidences
             pred_locs: predicated locations
             actual_labels: answer class labels
             actual_locs: answer box locations
-        Returns: 
+        Returns:
+            postive_list: if pos -> 1 else 0
+            negative_list: if neg and label is not classes(not unknown class) 1 else 0
         """
         
         pos = 0
-        matches = [
-            [[[None for _ in range(boxes[i])]
-            for _ in range(self.fmap_shapes[i][2])]
-            for _ in range(self.fmap_shapes[i][1])]
-            for i in range(len(boxes))
-        ]
+        neg = 0
+        pos_list = []
+        neg_list = []
+        matches = []
+
+        # generate serializationd matching boxes
+        for i in range(len(boxes)):
+            for _ in range(self.fmap_shapes[i][1]):
+                for _ in range(self.fmap_shapes[i][2]):
+                    for _ in range(boxes[i]):
+                        matches.append(0)
         
         # compute jaccard for each default box
         for gt_label, gt_box in zip(actual_labels, actual_locs):
-            index = 0
-            for i in range(len(boxes)):
-                for y in range(self.fmap_shapes[i][1]):
-                    for x in range(self.fmap_shapes[i][2]):
-                        for j in range(boxes[i]):
-                            jacc = jaccard(gt_box, self.default_boxes[index])
-                            index += 1
+            for i in range(len(matches)):
+                jacc = jaccard(gt_box, self.default_boxes[i])
+                if 0.5 <= jacc:
+                    matches[i] = 1
+                    pos += 1
 
-                            if 0.5 <= jacc:
-                                # matches[i][y][x][j] = Box(gt_box, gt_label)
-                                pos += 1
 
-        neg = 0
-        negmax = pos * 3
+        indicies = self.extract_highest_indicies(pred_confs, pos*3)
 
-        return pos
-                                
+        for i in indicies:
+            if classes != np.argmax(pred_confs[i]):
+                matches[i] = -1
+                neg += 1
+
+        for i, box in zip(range(len(matches)), matches):
+            if 0 < box:
+                pos_list.append(1)
+                neg_list.append(0)
+            elif box < 0:
+                pos_list.append(0)
+                neg_list.append(1)
+            else:
+                pos_list.append(9)
+                neg_list.append(0)
+
+        return pos_list, neg_list
