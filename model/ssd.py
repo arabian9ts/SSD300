@@ -62,7 +62,7 @@ class SSD(VGG16):
             input: images batch
             is_training: is this training?
         Returns:
-            feature maps
+            feature maps, pred_confs, pred_locs
         """
 
         # assenble base network
@@ -110,7 +110,7 @@ class SSD(VGG16):
         print('confs: '+str(self.pred_confs.get_shape().as_list()))
         print('locs: '+str(self.pred_locs.get_shape().as_list()))
 
-        return self.feature_maps
+        return self.feature_maps, self.pred_confs, self.pred_locs
 
 
     def smooth_L1(self, x):
