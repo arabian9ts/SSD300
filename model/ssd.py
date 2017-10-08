@@ -127,18 +127,20 @@ class SSD(VGG16):
         return tf.where(cond, sml1, sml2)
 
 
-    def loss(self, pred_confs, pred_locs, total_boxes):
+    def loss(self, total_boxes):
         """
         loss func defined as Loss = (Loss_conf + a*Loss_loc) / N
         In here, compute confidence loss and location loss,
         finally, total loss.
 
         Args:
-            pred_confs: predicated confidences => probability distribution
-            pred_locs: predicted locations => predicted box
             total_boxes: total size of boxes => len(self.default_boxes)
         Returns:
             total loss per batch
+            positive list
+            negative list
+            ground truth label placeholder
+            ground truth boxes placeholder
         """
 
         gt_labels = tf.placeholder(shape=[None, total_boxes], dtype=tf.int32)
@@ -146,10 +148,12 @@ class SSD(VGG16):
         pos = tf.placeholder(shape=[None, total_boxes], dtype=tf.float32)
         neg = tf.placeholder(shape=[None, total_boxes], dtype=tf.float32)
 
-        loss_loc = tf.reduce_sum(self.smooth_L1(gt_boxes - pred_locs), reduction_indices=2) * pos
+        loss_loc = tf.reduce_sum(self.smooth_L1(gt_boxes - self.pred_locs), reduction_indices=2) * pos
         loss_loc = tf.reduce_sum(loss_loc, reduction_indices=1) / (1e-5 + tf.reduce_sum(pos, reduction_indices = 1))
 
-        loss_conf = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=pred_confs, labels=gt_labels) * (pos + neg)
+        loss_conf = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=self.pred_confs, labels=gt_labels) * (pos + neg)
         loss_conf = tf.reduce_sum(loss_conf, reduction_indices=1) / (1e-5 + tf.reduce_sum((pos + neg), reduction_indices = 1))
 
-        return tf.reduce_sum(loss_conf + loss_loc)
+        loss = tf.reduce_sum(loss_conf + loss_loc)
+
+        return loss, pos, neg, gt_labels, gt_boxes
