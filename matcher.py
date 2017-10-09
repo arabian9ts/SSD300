@@ -91,7 +91,12 @@ class Matcher:
         matching computes pos and neg count for the computation of loss.
         now, the most noting point is that it is not important that 
         whether class label is correctly predicted.
-        class label loss is evaluated by loss_conf
+        class label loss is evaled by loss_conf
+
+        matches variable have some Box instance and most of None.
+        if jaccard >= 0.5, that matches box has Box(gt_loc, gt_label).
+        then, sort by pred_confs loss and extract 3*pos boxes, which they
+        have Box([], classes) => background.
 
         Args:
             pred_confs: predicated confidences
@@ -99,6 +104,7 @@ class Matcher:
             actual_labels: answer class labels
             actual_locs: answer box locations
         Returns:
+            matches: mathes boxes (if matched, they have a Box instance)
             postive_list: if pos -> 1 else 0
             negative_list: if neg and label is not classes(not unknown class) 1 else 0
         """
@@ -150,4 +156,4 @@ class Matcher:
                 neg_list.append(0)
 
 
-        return pos_list, neg_list
+        return matches, pos_list, neg_list
