@@ -9,7 +9,7 @@ author: arabian9ts
 from model.exception import *
 
 class Box:
-    _locs = []
+    _loc = []
     _index = 0
 
     def __init__(self, loc=None, index=None):
