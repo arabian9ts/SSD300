@@ -1,5 +1,7 @@
 """
 matching function is defined here.
+Matcher does matching with only one image.
+If use batch, call matching per image.
 
 date: 10/2
 author: arabian9ts
@@ -112,14 +114,14 @@ class Matcher:
             for _ in range(self.fmap_shapes[i][1]):
                 for _ in range(self.fmap_shapes[i][2]):
                     for _ in range(boxes[i]):
-                        matches.append(0)
+                        matches.append(None)
         
         # compute jaccard for each default box
         for gt_label, gt_box in zip(actual_labels, actual_locs):
             for i in range(len(matches)):
                 jacc = jaccard(gt_box, self.default_boxes[i])
                 if 0.5 <= jacc:
-                    matches[i] = 1
+                    matches[i] = Box(gt_box, gt_label)
                     pos += 1
 
 
@@ -127,18 +129,25 @@ class Matcher:
 
         for i in indicies:
             if classes != np.argmax(pred_confs[i]):
-                matches[i] = -1
+                matches[i] = Box([], classes)
                 neg += 1
 
         for i, box in zip(range(len(matches)), matches):
-            if 0 < box:
-                pos_list.append(1)
+            # if box is None
+            # => Neither positive nor negative
+            if not box:
+                pos_list.append(0)
                 neg_list.append(0)
-            elif box < 0:
+            # if box's loc is empty
+            # => Negative
+            elif not box.loc:
                 pos_list.append(0)
                 neg_list.append(1)
+            # if box's loc is specified
+            # => Positive
             else:
-                pos_list.append(9)
+                pos_list.append(1)
                 neg_list.append(0)
+
 
         return pos_list, neg_list
