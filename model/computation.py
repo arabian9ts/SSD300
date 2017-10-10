@@ -40,3 +40,32 @@ def jaccard(rect1, rect2):
 
     # A∧B / A∨B
     return intersect / union
+
+
+def swap_width_height(rect):
+    """
+    swap width and height of the specified rectangle
+    """
+    rect.append(rect[2])
+    rect.pop(2)
+    return rect
+
+
+def corner2center(rect):
+    """
+    rect is defined as [ top_left_x, top_left_y, height, width ]
+    """
+    center_x = rect[0] + rect[3] / 2
+    center_y = rect[1] + rect[2] / 2
+
+    return [center_x, center_y, rect[2], rect[3]]
+
+
+def center2corner(rect):
+    """
+    rect is defined as [ top_left_x, top_left_y, height, width ]
+    """
+    corner_x = rect[0] - (rect[3] - rect[0])
+    corner_y = rect[1] - (rect[2] - rect[1])
+
+    return [corner_x, corner_y, rect[2], rect[3]]
