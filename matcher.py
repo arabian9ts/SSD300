@@ -108,7 +108,6 @@ class Matcher:
             actual_labels: answer class labels
             actual_locs: answer box locations
         Returns:
-            matches: mathes boxes (if matched, they have a Box instance)
             postive_list: if pos -> 1 else 0
             negative_list: if neg and label is not classes(not unknown class) 1 else 0
             transformed_gt_labels: gt_label if pos else classes
@@ -151,8 +150,8 @@ class Matcher:
             if not box:
                 pos_list.append(0)
                 neg_list.append(0)
-                transformed_gt_labels.append(gt_label)
-                transformed_gt_locs.append(gt_box)
+                transformed_gt_labels.append(classes-1)
+                transformed_gt_locs.append([0]*4)
             # if box's loc is empty
             # => Negative
             elif not box.loc:
@@ -165,8 +164,8 @@ class Matcher:
             else:
                 pos_list.append(1)
                 neg_list.append(0)
-                transformed_gt_labels.append(classes-1)
-                transformed_gt_locs.append([0]*4)
+                transformed_gt_labels.append(gt_label-1)
+                transformed_gt_locs.append(gt_box)
 
 
         return matches, pos_list, neg_list, transformed_gt_labels, transformed_gt_locs
