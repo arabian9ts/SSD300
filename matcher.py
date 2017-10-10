@@ -168,4 +168,4 @@ class Matcher:
                 transformed_gt_locs.append(gt_box)
 
 
-        return matches, pos_list, neg_list, transformed_gt_labels, transformed_gt_locs
+        return pos_list, neg_list, transformed_gt_labels, transformed_gt_locs

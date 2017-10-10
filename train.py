@@ -47,7 +47,7 @@ with tf.Session() as sess:
 
     def prepare_loss(pred_confs, pred_locs, actual_labels, actual_locs):
         global positives, negatives
-        matches, pos_list, neg_list, t_gtl, t_gtb = matcher.matching(pred_confs, pred_locs, actual_labels, actual_locs)
+        pos_list, neg_list, t_gtl, t_gtb = matcher.matching(pred_confs, pred_locs, actual_labels, actual_locs)
         positives.append(pos_list)
         negatives.append(neg_list)
         t_gtls.append(t_gtl)
