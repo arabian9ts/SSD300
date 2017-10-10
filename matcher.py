@@ -73,6 +73,16 @@ class Matcher:
         
 
     def extract_highest_indicies(self, pred_confs, max_length):
+        """
+        extract specific indicies, that is, have most high loss_confs.
+
+        Args:
+            pred_confs: predicated confidences
+            max_length: max length of extracted indicies (in here, pos*3)
+        Returns:
+            extracted indicies of boxes (confidences).
+        """
+
         loss_confs = []
 
         for pred_conf in pred_confs:
