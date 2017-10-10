@@ -110,7 +110,7 @@ class Matcher:
 
         when compute losses, we need transformed ground truth labels and locations
         because each box has self confidence and location.
-        so, we should prepare transformed labels and locations whose size is as same as len(matches).
+        so, we should prepare expanded labels and locations whose size is as same as len(matches).
 
         Args:
             pred_confs: predicated confidences
@@ -120,16 +120,16 @@ class Matcher:
         Returns:
             postive_list: if pos -> 1 else 0
             negative_list: if neg and label is not classes(not unknown class) 1 else 0
-            transformed_gt_labels: gt_label if pos else classes
-            transformed_gt_locs: gt_locs if pos else [0, 0, 0, 0]
+            expanded_gt_labels: gt_label if pos else classes
+            expanded_gt_locs: gt_locs if pos else [0, 0, 0, 0]
         """
         
         pos = 0
         neg = 0
         pos_list = []
         neg_list = []
-        transformed_gt_labels = []
-        transformed_gt_locs = []
+        expanded_gt_labels = []
+        expanded_gt_locs = []
         matches = []
 
         # generate serializationd matching boxes
@@ -160,22 +160,22 @@ class Matcher:
             if not box:
                 pos_list.append(0)
                 neg_list.append(0)
-                transformed_gt_labels.append(classes-1)
-                transformed_gt_locs.append([0]*4)
+                expanded_gt_labels.append(classes-1)
+                expanded_gt_locs.append([0]*4)
             # if box's loc is empty
             # => Negative
             elif not box.loc:
                 pos_list.append(0)
                 neg_list.append(1)
-                transformed_gt_labels.append(classes-1)
-                transformed_gt_locs.append([0]*4)
+                expanded_gt_labels.append(classes-1)
+                expanded_gt_locs.append([0]*4)
             # if box's loc is specified
             # => Positive
             else:
                 pos_list.append(1)
                 neg_list.append(0)
-                transformed_gt_labels.append(gt_label-1)
-                transformed_gt_locs.append(gt_box)
+                expanded_gt_labels.append(gt_label-1)
+                expanded_gt_locs.append(gt_box)
 
 
-        return pos_list, neg_list, transformed_gt_labels, transformed_gt_locs
+        return pos_list, neg_list, expanded_gt_labels, expanded_gt_locs
