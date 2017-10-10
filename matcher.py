@@ -98,6 +98,10 @@ class Matcher:
         then, sort by pred_confs loss and extract 3*pos boxes, which they
         have Box([], classes) => background.
 
+        when compute losses, we need transformed ground truth labels and locations
+        because each box has self confidence and location.
+        so, we should prepare transformed labels and locations whose size is as same as len(matches).
+
         Args:
             pred_confs: predicated confidences
             pred_locs: predicated locations
@@ -107,12 +111,16 @@ class Matcher:
             matches: mathes boxes (if matched, they have a Box instance)
             postive_list: if pos -> 1 else 0
             negative_list: if neg and label is not classes(not unknown class) 1 else 0
+            transformed_gt_labels: gt_label if pos else classes
+            transformed_gt_locs: gt_locs if pos else [0, 0, 0, 0]
         """
         
         pos = 0
         neg = 0
         pos_list = []
         neg_list = []
+        transformed_gt_labels = []
+        transformed_gt_locs = []
         matches = []
 
         # generate serializationd matching boxes
@@ -130,12 +138,11 @@ class Matcher:
                     matches[i] = Box(gt_box, gt_label)
                     pos += 1
 
-
         indicies = self.extract_highest_indicies(pred_confs, pos*3)
 
         for i in indicies:
             if classes != np.argmax(pred_confs[i]):
-                matches[i] = Box([], classes)
+                matches[i] = Box([], classes-1)
                 neg += 1
 
         for i, box in zip(range(len(matches)), matches):
@@ -144,16 +151,22 @@ class Matcher:
             if not box:
                 pos_list.append(0)
                 neg_list.append(0)
+                transformed_gt_labels.append(gt_label)
+                transformed_gt_locs.append(gt_box)
             # if box's loc is empty
             # => Negative
             elif not box.loc:
                 pos_list.append(0)
                 neg_list.append(1)
+                transformed_gt_labels.append(classes-1)
+                transformed_gt_locs.append([0]*4)
             # if box's loc is specified
             # => Positive
             else:
                 pos_list.append(1)
                 neg_list.append(0)
+                transformed_gt_labels.append(classes-1)
+                transformed_gt_locs.append([0]*4)
 
 
-        return matches, pos_list, neg_list
+        return matches, pos_list, neg_list, transformed_gt_labels, transformed_gt_locs

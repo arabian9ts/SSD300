@@ -18,6 +18,8 @@ from model.default_box import *
 BATCH_SIZE = 1
 positives = []
 negatives = []
+t_gtls = []
+t_gtbs = []
 # ============================== END ============================== #
 
 
@@ -45,12 +47,14 @@ with tf.Session() as sess:
 
     def prepare_loss(pred_confs, pred_locs, actual_labels, actual_locs):
         global positives, negatives
-        matches, pos_list, neg_list = matcher.matching(pred_confs, pred_locs, actual_labels, actual_locs)
+        matches, pos_list, neg_list, t_gtl, t_gtb = matcher.matching(pred_confs, pred_locs, actual_labels, actual_locs)
         positives.append(pos_list)
         negatives.append(neg_list)
+        t_gtls.append(t_gtl)
+        t_gtbs.append(t_gtb)
 
 
     feature_maps, pred_confs, pred_locs = sess.run(train_set, feed_dict={input: image})
     print(len(pred_confs))
     prepare_loss(pred_confs, pred_locs, actual_labels, actual_locs)
-    # sess.run(loss, feed_dict={input: image, pos: positives, neg: negatives, gt_labels: actual_labels, gt_boxes: actual_locs})
+    sess.run(loss, feed_dict={input: image, pos: positives, neg: negatives, gt_labels: t_gtls, gt_boxes: t_gtbs})
