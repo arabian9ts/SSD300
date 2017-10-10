@@ -34,11 +34,7 @@ dboxes = generate_boxes(fmap_shapes)
 print(len(boxes))
 
 loss, pos, neg, gt_labels, gt_boxes = ssd.loss(len(dboxes))
-
 matcher = Matcher(fmap_shapes, dboxes)
-
-actual_labels = np.array([1, 2])
-actual_locs = np.array([[0.5, 0.5, 1, 1], [4, 4, 4, 4]])
 
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
@@ -56,5 +52,9 @@ with tf.Session() as sess:
 
     feature_maps, pred_confs, pred_locs = sess.run(train_set, feed_dict={input: image})
     print(len(pred_confs))
-    prepare_loss(pred_confs, pred_locs, actual_labels, actual_locs)
-    sess.run(loss, feed_dict={input: image, pos: positives, neg: negatives, gt_labels: t_gtls, gt_boxes: t_gtbs})
+    
+    for i in range(BATCH_SIZE):
+        actual_labels = np.array([1, 2])
+        actual_locs = np.array([[0.5, 0.5, 1, 1], [4, 4, 4, 4]])
+        prepare_loss(pred_confs, pred_locs, actual_labels, actual_locs)
+        sess.run(loss, feed_dict={input: image, pos: positives, neg: negatives, gt_labels: t_gtls, gt_boxes: t_gtbs})
