@@ -27,9 +27,9 @@ from model.default_box import *
 
 
 # ====================== Training Parameters ====================== #
-BATCH_SIZE = 2
+BATCH_SIZE = 20
 BATCH = int(4592 / BATCH_SIZE)
-EPOCH = 10
+EPOCH = 30
 MINIBATCH = []
 EPOCH_LOSSES = []
 BATCH_LOSSES = []
