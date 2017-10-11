@@ -104,3 +104,4 @@ ENV/
 .vscode/
 .DS_Store
 */.DS_Store
+voc2007/*
