@@ -5,6 +5,7 @@ date: 10/4
 author: arabian9ts
 """
 
+import datetime
 import tensorboard as tf
 import numpy as np
 import pickle
