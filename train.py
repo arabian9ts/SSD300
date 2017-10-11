@@ -120,11 +120,12 @@ with tf.Session() as sess:
         EPOCH_LOSSES.append(np.mean(BATCH_LOSSES))
         print('*** RESULT: '+str(EPOCH_LOSSES[-1]))
         print('==================== EPOCH: '+str(ep+1)+' END ====================')
-        print('\nEND LEARNING')
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss')
-        plt.plot(np.array(range(EPOCH)), lossbox)
-        plt.savefig("loss.png")
-        plt.show()
+        
+    print('\nEND LEARNING')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.plot(np.array(range(EPOCH)), EPOCH_LOSSES)
+    plt.savefig("loss.png")
+    plt.show()
 
     print('==================== '+str(datetime.datetime.now())+' ====================')
