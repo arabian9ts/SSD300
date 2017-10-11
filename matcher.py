@@ -174,7 +174,7 @@ class Matcher:
             else:
                 pos_list.append(1)
                 neg_list.append(0)
-                expanded_gt_labels.append(gt_label-1)
+                expanded_gt_labels.append(gt_label)
                 expanded_gt_locs.append(gt_box)
 
 
