@@ -46,9 +46,8 @@ def swap_width_height(rect):
     """
     swap width and height of the specified rectangle
     """
-    rect.append(rect[2])
-    rect.pop(2)
-    return rect
+
+    return [rect[0], rect[1], rect[3], rect[2]]
 
 
 def corner2center(rect):
