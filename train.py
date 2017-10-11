@@ -5,6 +5,14 @@ date: 10/4
 author: arabian9ts
 """
 
+# escape matplotlib error
+import matplotlib
+matplotlib.use('Agg')
+
+# escape tensorflow warning
+import os
+os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
+
 import datetime
 import tensorboard as tf
 import numpy as np
@@ -48,6 +56,8 @@ print(len(dboxes))
 
 # required placeholder for loss
 loss, pos, neg, gt_labels, gt_boxes = ssd.loss(len(dboxes))
+optimizer = tf.train.AdamOptimizer(0.05)
+train_step = optimizer.minimize(loss)
 
 # provides matching method
 matcher = Matcher(fmap_shapes, dboxes)
@@ -116,6 +126,7 @@ with tf.Session() as sess:
             
             batch_loss = sess.run(loss, feed_dict={input: MINIBATCH, pos: positives, neg: negatives, gt_labels: ex_gt_labels, gt_boxes: ex_gt_boxes})
             BATCH_LOSSES.append(batch_loss)
+            sess.run(train_step, feed_dict={input: MINIBATCH, pos: positives, neg: negatives, gt_labels: ex_gt_labels, gt_boxes: ex_gt_boxes})
             print('*** BATCH LOSS: '+str(batch_loss)+' ***')
             print('==================== BATCH: '+str(ba+1)+' END ====================')
         EPOCH_LOSSES.append(np.mean(BATCH_LOSSES))
