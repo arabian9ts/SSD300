@@ -137,6 +137,8 @@ class SSD(VGG16):
             total_boxes: total size of boxes => len(self.default_boxes)
         Returns:
             total loss per batch
+            confidence loss
+            location loss
             positive list
             negative list
             ground truth label placeholder
@@ -156,4 +158,4 @@ class SSD(VGG16):
 
         loss = tf.reduce_sum(loss_conf + loss_loc)
 
-        return loss, pos, neg, gt_labels, gt_boxes
+        return loss, loss_conf, loss_loc, pos, neg, gt_labels, gt_boxes

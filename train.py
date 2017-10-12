@@ -55,7 +55,7 @@ dboxes = generate_boxes(fmap_shapes)
 print(len(dboxes))
 
 # required placeholder for loss
-loss, pos, neg, gt_labels, gt_boxes = ssd.loss(len(dboxes))
+loss, loss_conf, loss_loc, pos, neg, gt_labels, gt_boxes = ssd.loss(len(dboxes))
 optimizer = tf.train.AdamOptimizer(0.05)
 train_step = optimizer.minimize(loss)
 
@@ -124,14 +124,17 @@ with tf.Session() as sess:
 
                 prepare_loss(pred_confs, pred_locs, actual_labels, actual_locs)
             
-            batch_loss = sess.run(loss, feed_dict={input: MINIBATCH, pos: positives, neg: negatives, gt_labels: ex_gt_labels, gt_boxes: ex_gt_boxes})
+            batch_loss, batch_conf, batch_loc = sess.run([loss, loss_conf, loss_loc], feed_dict={input: MINIBATCH, pos: positives, neg: negatives, gt_labels: ex_gt_labels, gt_boxes: ex_gt_boxes})
             BATCH_LOSSES.append(batch_loss)
             sess.run(train_step, feed_dict={input: MINIBATCH, pos: positives, neg: negatives, gt_labels: ex_gt_labels, gt_boxes: ex_gt_boxes})
-            print('*** BATCH LOSS: '+str(batch_loss)+' ***')
-            print('==================== BATCH: '+str(ba+1)+' END ====================')
+            print('\n********** BATCH LOSS **********')
+            print('       LOC LOSS: '+str(batch_loc[0]))
+            print('       CONF LOSS: '+str(batch_conf[0]))
+            print('       TOTAL LOSS: '+str(batch_loss))
+            print('========== BATCH: '+str(ba+1)+' END ==========')
         EPOCH_LOSSES.append(np.mean(BATCH_LOSSES))
-        print('*** RESULT: '+str(EPOCH_LOSSES[-1]))
-        print('==================== EPOCH: '+str(ep+1)+' END ====================')
+        print('\n*** RESULT: '+str(EPOCH_LOSSES[-1]))
+        print('========== EPOCH: '+str(ep+1)+' END ==========')
         
     print('\nEND LEARNING')
     plt.xlabel('Epoch')
