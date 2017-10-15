@@ -28,11 +28,8 @@ from model.default_box import *
 
 # ====================== Training Parameters ====================== #
 BATCH_SIZE = 20
-BATCH = int(4592 / BATCH_SIZE)
 EPOCH = 30
-MINIBATCH = []
 EPOCH_LOSSES = []
-BATCH_LOSSES = []
 # ============================== END ============================== #
 
 
@@ -66,6 +63,70 @@ matcher = Matcher(fmap_shapes, dboxes)
 with open('VOC2007.pkl', 'rb') as f:
     data = pickle.load(f)
     keys = sorted(data.keys())
+    slicer = int(len(keys) * 0.8)
+    train_keys = keys[:slicer]
+    test_keys = keys[slicer:]
+    BATCH = int(len(train_keys) / BATCH_SIZE)
+
+
+# evaluate loss
+def eval(indicies, is_training):
+    global BATCH_LOSSES
+
+    # ================ RESET / EVAL ================ #
+    MINIBATCH = []
+    actual_labels = []
+    actual_locs = []
+    positives = []
+    negatives = []
+    ex_gt_labels = []
+    ex_gt_boxes = []
+    # ===================== END ===================== #
+
+    # call prepare_loss per image
+    # because matching method works with only one image
+    def prepare_loss(pred_confs, pred_locs, actual_labels, actual_locs):
+        pos_list, neg_list, t_gtl, t_gtb = matcher.matching(pred_confs, pred_locs, actual_labels, actual_locs)
+        positives.append(pos_list)
+        negatives.append(neg_list)
+        ex_gt_labels.append(t_gtl)
+        ex_gt_boxes.append(t_gtb)
+
+    for idx in indicies:
+        # make images mini batch
+        if is_training:
+            img = load_image('voc2007/'+train_keys[idx])
+        else:
+            img = load_image('voc2007/'+test_keys[idx])
+        img = img.reshape((300, 300, 3))
+        MINIBATCH.append(img)
+
+    feature_maps, pred_confs, pred_locs = sess.run(train_set, feed_dict={input: MINIBATCH})
+
+    for idx in indicies:
+        # extract ground truth info
+        arr = data[train_keys[idx]]
+
+        for obj in arr:
+            loc = obj[:4]
+            label = np.argmax(obj[4:])
+
+            # transform location for ssd-training
+            loc = corner2center(swap_width_height(loc))
+
+            actual_locs.append(loc)
+            actual_labels.append(label)
+
+        prepare_loss(pred_confs, pred_locs, actual_labels, actual_locs)
+            
+    batch_loss, batch_conf, batch_loc = sess.run([loss, loss_conf, loss_loc], feed_dict={input: MINIBATCH, pos: positives, neg: negatives, gt_labels: ex_gt_labels, gt_boxes: ex_gt_boxes})
+    BATCH_LOSSES.append(batch_loss)
+
+    if is_training:
+        sess.run(train_step, feed_dict={input: MINIBATCH, pos: positives, neg: negatives, gt_labels: ex_gt_labels, gt_boxes: ex_gt_boxes})
+
+    return batch_loc, batch_conf, batch_loss
+
 
 # tensorflow session
 with tf.Session() as sess:
@@ -77,64 +138,24 @@ with tf.Session() as sess:
     for ep in range(EPOCH):
         BATCH_LOSSES = []
         for ba in range(BATCH):
+            indicies = np.random.choice(len(train_keys), BATCH_SIZE)
+            batch_loc, batch_conf, batch_loss = eval(indicies, True)
 
-            # ================ RESET / BATCH ================ #
-            MINIBATCH = []
-            actual_labels = []
-            actual_locs = []
-            positives = []
-            negatives = []
-            ex_gt_labels = []
-            ex_gt_boxes = []
-            indicies = np.random.choice(len(keys), BATCH_SIZE)
-            # ===================== END ===================== #
-
-            # call prepare_loss per image
-            # because matching method works with only an image
-            def prepare_loss(pred_confs, pred_locs, actual_labels, actual_locs):
-                global positives, negatives, ex_gt_labels, ex_gt_boxes
-                pos_list, neg_list, t_gtl, t_gtb = matcher.matching(pred_confs, pred_locs, actual_labels, actual_locs)
-                positives.append(pos_list)
-                negatives.append(neg_list)
-                ex_gt_labels.append(t_gtl)
-                ex_gt_boxes.append(t_gtb)
-
-            
-            for idx in indicies:
-                # make images mini batch
-                img = load_image('voc2007/'+keys[idx])
-                img = img.reshape((300, 300, 3))
-                MINIBATCH.append(img)
-
-            feature_maps, pred_confs, pred_locs = sess.run(train_set, feed_dict={input: MINIBATCH})
-
-            for idx in indicies:
-                 # extract ground truth info
-                arr = data[keys[idx]]
-
-                for obj in arr:
-                    loc = obj[:4]
-                    label = np.argmax(obj[4:])
-
-                    # transform location for ssd-training
-                    loc = corner2center(swap_width_height(loc))
-
-                    actual_locs.append(loc)
-                    actual_labels.append(label)
-
-                prepare_loss(pred_confs, pred_locs, actual_labels, actual_locs)
-            
-            batch_loss, batch_conf, batch_loc = sess.run([loss, loss_conf, loss_loc], feed_dict={input: MINIBATCH, pos: positives, neg: negatives, gt_labels: ex_gt_labels, gt_boxes: ex_gt_boxes})
-            BATCH_LOSSES.append(batch_loss)
-            sess.run(train_step, feed_dict={input: MINIBATCH, pos: positives, neg: negatives, gt_labels: ex_gt_labels, gt_boxes: ex_gt_boxes})
             print('\n********** BATCH LOSS **********')
-            print('       LOC LOSS: '+str(batch_loc[0]))
-            print('       CONF LOSS: '+str(batch_conf[0]))
+            print('       LOC LOSS: '+str(batch_loc))
+            print('       CONF LOSS: '+str(batch_conf))
             print('       TOTAL LOSS: '+str(batch_loss))
             print('========== BATCH: '+str(ba+1)+' END ==========')
         EPOCH_LOSSES.append(np.mean(BATCH_LOSSES))
-        print('\n*** RESULT: '+str(EPOCH_LOSSES[-1]))
-        print('========== EPOCH: '+str(ep+1)+' END ==========')
+        print('\n*** AVERAGE: '+str(EPOCH_LOSSES[-1])+' ***')
+
+        print('\n*** TEST ***')
+        indicies = np.random.choice(len(test_keys), BATCH_SIZE)
+        batch_loc, batch_conf, batch_loss = eval(indicies, True)
+        print('LOC LOSS: '+str(batch_loc))
+        print('CONF LOSS: '+str(batch_conf))
+        print('TOTAL LOSS: '+str(batch_loss))
+        print('\n========== EPOCH: '+str(ep+1)+' END ==========')
         
     print('\nEND LEARNING')
     plt.xlabel('Epoch')
