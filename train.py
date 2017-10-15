@@ -140,6 +140,7 @@ with tf.Session() as sess:
     plt.xlabel('Epoch')
     plt.ylabel('Loss')
     plt.plot(np.array(range(EPOCH)), EPOCH_LOSSES)
+    plt.grid()
     plt.savefig("loss.png")
     plt.show()
 
