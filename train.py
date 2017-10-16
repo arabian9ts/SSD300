@@ -34,135 +34,152 @@ EPOCH_LOSSES = []
 
 
 # ====================== SSD Setup ====================== #
+class SSD300:
+    def __init__(self):
+        # define input placeholder and initialize ssd instance
+        self.input = tf.placeholder(shape=[None, 300, 300, 3], dtype=tf.float32)
+        ssd = SSD()
 
-# define input placeholder and initialize ssd instance
-input = tf.placeholder(shape=[None, 300, 300, 3], dtype=tf.float32)
-ssd = SSD()
+        # build ssd network => feature-maps and confs and locs tensor is returned
+        fmaps, confs, locs = ssd.build(self.input, is_training=True)
 
-# build ssd network => feature-maps and confs and locs tensor is returned
-fmaps, confs, locs = ssd.build(input, is_training=True)
+        # zip running set of tensor
+        self.pred_set = [fmaps, confs, locs]
 
-# zip running set of tensor
-train_set = [fmaps, confs, locs]
+        # required param from default-box and loss function
+        fmap_shapes = [map.get_shape().as_list() for map in fmaps]
+        # print('fmap shapes is '+str(fmap_shapes))
+        self.dboxes = generate_boxes(fmap_shapes)
+        print(len(self.dboxes))
 
-# required param from default-box and loss function
-fmap_shapes = [map.get_shape().as_list() for map in fmaps]
-# print('fmap shapes is '+str(fmap_shapes))
-dboxes = generate_boxes(fmap_shapes)
-print(len(dboxes))
+        # required placeholder for loss
+        loss, loss_conf, loss_loc, self.pos, self.neg, self.gt_labels, self.gt_boxes = ssd.loss(len(self.dboxes))
+        self.train_set = [loss, loss_conf, loss_loc]
+        optimizer = tf.train.AdamOptimizer(0.05)
+        self.train_step = optimizer.minimize(loss)
 
-# required placeholder for loss
-loss, loss_conf, loss_loc, pos, neg, gt_labels, gt_boxes = ssd.loss(len(dboxes))
-optimizer = tf.train.AdamOptimizer(0.05)
-train_step = optimizer.minimize(loss)
+        # provides matching method
+        self.matcher = Matcher(fmap_shapes, self.dboxes)
 
-# provides matching method
-matcher = Matcher(fmap_shapes, dboxes)
+    # evaluate loss
+    def eval(self, images, actual_data, is_training):
 
-# load pickle data set annotation
-with open('VOC2007.pkl', 'rb') as f:
-    data = pickle.load(f)
-    keys = sorted(data.keys())
-    slicer = int(len(keys) * 0.8)
-    train_keys = keys[:slicer]
-    test_keys = keys[slicer:]
-    BATCH = int(len(train_keys) / BATCH_SIZE)
+        # ================ RESET / EVAL ================ #
+        actual_labels = []
+        actual_locs = []
+        positives = []
+        negatives = []
+        ex_gt_labels = []
+        ex_gt_boxes = []
+        # ===================== END ===================== #
 
+        # call prepare_loss per image
+        # because matching method works with only one image
+        def prepare_loss(pred_confs, pred_locs, actual_labels, actual_locs):
+            pos_list, neg_list, t_gtl, t_gtb = self.matcher.matching(pred_confs, pred_locs, actual_labels, actual_locs)
+            positives.append(pos_list)
+            negatives.append(neg_list)
+            ex_gt_labels.append(t_gtl)
+            ex_gt_boxes.append(t_gtb)
 
-# evaluate loss
-def eval(indicies, is_training):
-    global BATCH_LOSSES
+        feature_maps, pred_confs, pred_locs = sess.run(self.pred_set, feed_dict={self.input: images})
 
-    # ================ RESET / EVAL ================ #
-    MINIBATCH = []
-    actual_labels = []
-    actual_locs = []
-    positives = []
-    negatives = []
-    ex_gt_labels = []
-    ex_gt_boxes = []
-    # ===================== END ===================== #
+        for i in range(len(images)):
+            # extract ground truth info
+            for obj in actual_data[i]:
+                loc = obj[:4]
+                label = np.argmax(obj[4:])
 
-    # call prepare_loss per image
-    # because matching method works with only one image
-    def prepare_loss(pred_confs, pred_locs, actual_labels, actual_locs):
-        pos_list, neg_list, t_gtl, t_gtb = matcher.matching(pred_confs, pred_locs, actual_labels, actual_locs)
-        positives.append(pos_list)
-        negatives.append(neg_list)
-        ex_gt_labels.append(t_gtl)
-        ex_gt_boxes.append(t_gtb)
+                # transform location for ssd-training
+                loc = corner2center(swap_width_height(loc))
 
-    for idx in indicies:
-        # make images mini batch
+                actual_locs.append(loc)
+                actual_labels.append(label)
+
+            prepare_loss(pred_confs, pred_locs, actual_labels, actual_locs)
+                
+        batch_loss, batch_conf, batch_loc = \
+        sess.run(self.train_set, \
+        feed_dict={self.input: images, self.pos: positives, self.neg: negatives, self.gt_labels: ex_gt_labels, self.gt_boxes: ex_gt_boxes})
+
         if is_training:
-            img = load_image('voc2007/'+train_keys[idx])
-        else:
-            img = load_image('voc2007/'+test_keys[idx])
-        img = img.reshape((300, 300, 3))
-        MINIBATCH.append(img)
+            sess.run(self.train_step, \
+            feed_dict={self.input: images, self.pos: positives, self.neg: negatives, self.gt_labels: ex_gt_labels, self.gt_boxes: ex_gt_boxes})
 
-    feature_maps, pred_confs, pred_locs = sess.run(train_set, feed_dict={input: MINIBATCH})
-
-    for idx in indicies:
-        # extract ground truth info
-        arr = data[train_keys[idx]]
-
-        for obj in arr:
-            loc = obj[:4]
-            label = np.argmax(obj[4:])
-
-            # transform location for ssd-training
-            loc = corner2center(swap_width_height(loc))
-
-            actual_locs.append(loc)
-            actual_labels.append(label)
-
-        prepare_loss(pred_confs, pred_locs, actual_labels, actual_locs)
-            
-    batch_loss, batch_conf, batch_loc = sess.run([loss, loss_conf, loss_loc], feed_dict={input: MINIBATCH, pos: positives, neg: negatives, gt_labels: ex_gt_labels, gt_boxes: ex_gt_boxes})
-    BATCH_LOSSES.append(batch_loss)
-
-    if is_training:
-        sess.run(train_step, feed_dict={input: MINIBATCH, pos: positives, neg: negatives, gt_labels: ex_gt_labels, gt_boxes: ex_gt_boxes})
-
-    return batch_loc, batch_conf, batch_loss
+        return pred_confs, pred_locs, batch_loc, batch_conf, batch_loss
 
 
-# tensorflow session
-with tf.Session() as sess:
-    sess.run(tf.global_variables_initializer())
 
-    print('\nSTART LEARNING')
-    print('==================== '+str(datetime.datetime.now())+' ====================')
+if __name__ == '__main__':
+    ssd = SSD300()
 
-    for ep in range(EPOCH):
-        BATCH_LOSSES = []
-        for ba in range(BATCH):
+    # load pickle data set annotation
+    with open('VOC2007.pkl', 'rb') as f:
+        data = pickle.load(f)
+        keys = sorted(data.keys())
+        slicer = int(len(keys) * 0.8)
+        train_keys = keys[:slicer]
+        test_keys = keys[slicer:]
+        BATCH = int(len(train_keys) / BATCH_SIZE)
+
+    def next_batch(is_training):
+        mini_batch = []
+        actual_data = []
+        if is_training:
             indicies = np.random.choice(len(train_keys), BATCH_SIZE)
-            batch_loc, batch_conf, batch_loss = eval(indicies, True)
+        else:
+            indicies = np.random.choice(len(test_keys), BATCH_SIZE)
 
-            print('\n********** BATCH LOSS **********')
-            print('       LOC LOSS: '+str(batch_loc))
-            print('       CONF LOSS: '+str(batch_conf))
-            print('       TOTAL LOSS: '+str(batch_loss))
-            print('========== BATCH: '+str(ba+1)+' END ==========')
-        EPOCH_LOSSES.append(np.mean(BATCH_LOSSES))
-        print('\n*** AVERAGE: '+str(EPOCH_LOSSES[-1])+' ***')
+        for idx in indicies:
+            # make images mini batch
+            if is_training:
+                img = load_image('voc2007/'+train_keys[idx])
+                actual_data.append(data[train_keys[idx]])
+            else:
+                img = load_image('voc2007/'+test_keys[idx])
+                actual_data.append(data[test_keys[idx]])
 
-        print('\n*** TEST ***')
-        indicies = np.random.choice(len(test_keys), BATCH_SIZE)
-        batch_loc, batch_conf, batch_loss = eval(indicies, True)
-        print('LOC LOSS: '+str(batch_loc))
-        print('CONF LOSS: '+str(batch_conf))
-        print('TOTAL LOSS: '+str(batch_loss))
-        print('\n========== EPOCH: '+str(ep+1)+' END ==========')
-        
-    print('\nEND LEARNING')
-    plt.xlabel('Epoch')
-    plt.ylabel('Loss')
-    plt.plot(np.array(range(EPOCH)), EPOCH_LOSSES)
-    plt.grid()
-    plt.savefig("loss.png")
-    plt.show()
+            img = img.reshape((300, 300, 3))
+            mini_batch.append(img)
 
-    print('==================== '+str(datetime.datetime.now())+' ====================')
+        return mini_batch, actual_data
+
+    # tensorflow session
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+
+        print('\nSTART LEARNING')
+        print('==================== '+str(datetime.datetime.now())+' ====================')
+
+        for ep in range(EPOCH):
+            BATCH_LOSSES = []
+            for ba in range(BATCH):
+                minibatch, actual_data = next_batch(is_training=True)
+                _, _, batch_loc, batch_conf, batch_loss = ssd.eval(minibatch, actual_data, True)
+                BATCH_LOSSES.append(batch_loss)
+
+                print('\n********** BATCH LOSS **********')
+                print('       LOC LOSS: '+str(batch_loc))
+                print('       CONF LOSS: '+str(batch_conf))
+                print('       TOTAL LOSS: '+str(batch_loss))
+                print('========== BATCH: '+str(ba+1)+' END ==========')
+            EPOCH_LOSSES.append(np.mean(BATCH_LOSSES))
+            print('\n*** AVERAGE: '+str(EPOCH_LOSSES[-1])+' ***')
+
+            print('\n*** TEST ***')
+            minibatch, actual_data = next_batch(is_training=False)
+            _, _, batch_loc, batch_conf, batch_loss = ssd.eval(minibatch, actual_data, False)
+            print('LOC LOSS: '+str(batch_loc))
+            print('CONF LOSS: '+str(batch_conf))
+            print('TOTAL LOSS: '+str(batch_loss))
+            print('\n========== EPOCH: '+str(ep+1)+' END ==========')
+            
+        print('\nEND LEARNING')
+        plt.xlabel('Epoch')
+        plt.ylabel('Loss')
+        plt.plot(np.array(range(EPOCH)), EPOCH_LOSSES)
+        plt.grid()
+        plt.savefig("loss.png")
+        plt.show()
+
+        print('==================== '+str(datetime.datetime.now())+' ====================')
