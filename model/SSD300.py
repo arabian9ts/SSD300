@@ -15,10 +15,12 @@ from model.default_box import *
 
 
 class SSD300:
-    def __init__(self):
+    def __init__(self, sess):
         """
         initialize SSD model as SSD300 whose input size is  300x300
         """
+        self.sess = sess
+
         # define input placeholder and initialize ssd instance
         self.input = tf.placeholder(shape=[None, 300, 300, 3], dtype=tf.float32)
         ssd = SSD()
@@ -65,7 +67,7 @@ class SSD300:
             ex_gt_labels.append(t_gtl)
             ex_gt_boxes.append(t_gtb)
 
-        feature_maps, pred_confs, pred_locs = sess.run(self.pred_set, feed_dict={self.input: images})
+        feature_maps, pred_confs, pred_locs = self.sess.run(self.pred_set, feed_dict={self.input: images})
 
         for i in range(len(images)):
             # extract ground truth info
@@ -82,11 +84,11 @@ class SSD300:
             prepare_loss(pred_confs, pred_locs, actual_labels, actual_locs)
                 
         batch_loss, batch_conf, batch_loc = \
-        sess.run(self.train_set, \
+        self.sess.run(self.train_set, \
         feed_dict={self.input: images, self.pos: positives, self.neg: negatives, self.gt_labels: ex_gt_labels, self.gt_boxes: ex_gt_boxes})
 
         if is_training:
-            sess.run(self.train_step, \
+            self.sess.run(self.train_step, \
             feed_dict={self.input: images, self.pos: positives, self.neg: negatives, self.gt_labels: ex_gt_labels, self.gt_boxes: ex_gt_boxes})
 
         return pred_confs, pred_locs, batch_loc, batch_conf, batch_loss
