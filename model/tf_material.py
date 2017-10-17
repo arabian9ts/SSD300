@@ -38,16 +38,17 @@ def convolution(input, name, ksize=None, stride=None, train_phase=tf.constant(Tr
     Returns: 
         convolution layer
     """
+    
     print('@'+name+' layer')
     print('Current input size in convolution layer is: '+str(input.get_shape().as_list()))
     with tf.variable_scope(name):
         size = structure[name][:]
 
         kernel_size = size[0]
-        bias = get_bias(size[1])
+        bias = get_bias(size[1], name)
         if ksize:
             kernel_size[0:2] = [ksize, ksize]
-        kernel = get_weight(kernel_size)
+        kernel = get_weight(kernel_size, name)
 
         strides = conv_strides[:]
         if stride:
@@ -75,8 +76,8 @@ def fully_connection(input, activation, name, train_phase=tf.constant(True)):
         dim = reduce(lambda x, y: x * y, shape[1:])
         x = tf.reshape(input, [-1, dim])
 
-        weights = get_weight([dim, size[0][0]])
-        biases = get_bias(size[1])
+        weights = get_weight([dim, size[0][0]], name='w_'+name)
+        biases = get_bias(size[1], name='b_'name)
 
         fc = tf.nn.bias_add(tf.matmul(x, weights), biases)
         fc = activation(fc)
@@ -126,7 +127,7 @@ def batch_normalization(input,  train_phase=tf.constant(True)):
     return tf.nn.batch_normalization(input, mean, var, beta, gamma, eps)
 
 
-def get_weight(shape):
+def get_weight(shape, name):
     """
     generate weight tensor based on Normal-Distribution
 
@@ -135,9 +136,9 @@ def get_weight(shape):
     """
 
     initial = tf.truncated_normal(shape, 0.0, 1.0) * 0.01
-    return tf.Variable(initial)
+    return tf.Variable(initial, name='w_'+name)
 
-def get_bias(shape):
+def get_bias(shape, name):
     """
     generate bias tensor based on Normal-Distribution
 
@@ -145,4 +146,4 @@ def get_bias(shape):
     Returns: initialized bias tensor
     """
 
-    return tf.Variable(tf.truncated_normal(shape, 0.0, 1.0) * 0.01)
+    return tf.Variable(tf.truncated_normal(shape, 0.0, 1.0) * 0.01, name='b_'+name)
