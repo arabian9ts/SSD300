@@ -43,7 +43,10 @@ with tf.Session() as sess:
 ```
 
 ## Test Training ##
+you have to extract data-set from zip files.
+decompress all zip files in datasets/ and move to VOC2007/ dir.
 ```
+$ ls VOC2007/ | wc -l    #  => 4954
 $ ./setup.sh
 $ python train.py
 ```
