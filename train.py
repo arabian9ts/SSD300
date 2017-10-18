@@ -67,6 +67,9 @@ if __name__ == '__main__':
         ssd = SSD300(sess)
         sess.run(tf.global_variables_initializer())
 
+        # parameter saver
+        saver = tf.train.Saver()
+
         print('\nSTART LEARNING')
         print('==================== '+str(datetime.datetime.now())+' ====================')
 
@@ -85,6 +88,8 @@ if __name__ == '__main__':
             EPOCH_LOSSES.append(np.mean(BATCH_LOSSES))
             print('\n*** AVERAGE: '+str(EPOCH_LOSSES[-1])+' ***')
 
+            saver.save(sess, './checkpoints/params.ckpt')
+
             print('\n*** TEST ***')
             minibatch, actual_data = next_batch(is_training=False)
             _, _, batch_loc, batch_conf, batch_loss = ssd.eval(minibatch, actual_data, False)
@@ -95,9 +100,8 @@ if __name__ == '__main__':
             
         print('\nEND LEARNING')
 
-        # parameter saver
-        saver = tf.train.Saver()
-        saver.save(sess, './params.ckpt')
+        
+        saver.save(sess, './params_final.ckpt')
 
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
