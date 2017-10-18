@@ -76,8 +76,8 @@ def fully_connection(input, activation, name, train_phase=tf.constant(True)):
         dim = reduce(lambda x, y: x * y, shape[1:])
         x = tf.reshape(input, [-1, dim])
 
-        weights = get_weight([dim, size[0][0]], name='w_'+name)
-        biases = get_bias(size[1], name='b_'name)
+        weights = get_weight([dim, size[0][0]], name=name)
+        biases = get_bias(size[1], name=name)
 
         fc = tf.nn.bias_add(tf.matmul(x, weights), biases)
         fc = activation(fc)
