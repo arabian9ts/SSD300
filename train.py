@@ -94,6 +94,11 @@ if __name__ == '__main__':
             print('\n========== EPOCH: '+str(ep+1)+' END ==========')
             
         print('\nEND LEARNING')
+
+        # parameter saver
+        saver = tf.train.Saver()
+        saver.save(sess, './params.ckpt')
+
         plt.xlabel('Epoch')
         plt.ylabel('Loss')
         plt.plot(np.array(range(EPOCH)), EPOCH_LOSSES)
