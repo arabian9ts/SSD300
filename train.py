@@ -13,6 +13,7 @@ matplotlib.use('Agg')
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
+import sys
 import datetime
 import tensorboard as tf
 import numpy as np
@@ -69,6 +70,14 @@ if __name__ == '__main__':
 
         # parameter saver
         saver = tf.train.Saver()
+        if len(sys.argv) == 2 and 'eval' == sys.argv[2]:
+            saver.restore(sess, './checkpoints/params.ckpt')
+            minibatch, actual_data = next_batch(is_training=True)
+            _, _, batch_loc, batch_conf, batch_loss = ssd.eval(minibatch, actual_data, False)
+            print(batch_loc)
+            print(batch_conf)
+            print(batch_loss)
+            sys.exit()
 
         print('\nSTART LEARNING')
         print('==================== '+str(datetime.datetime.now())+' ====================')
