@@ -76,7 +76,7 @@ class SSD300:
                 label = np.argmax(obj[4:])
 
                 # transform location for ssd-training
-                loc = corner2center(swap_width_height(loc))
+                loc = corner2center(loc)
 
                 actual_locs.append(loc)
                 actual_labels.append(label)

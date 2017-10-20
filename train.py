@@ -81,9 +81,9 @@ if __name__ == '__main__':
                 BATCH_LOSSES.append(batch_loss)
 
                 print('\n********** BATCH LOSS **********')
-                print('\nLOC LOSS: '+str(batch_loc))
-                print('\nCONF LOSS: '+str(batch_conf))
-                print('\n       TOTAL LOSS: '+str(batch_loss))
+                print('\nLOC LOSS:\n'+str(batch_loc))
+                print('\nCONF LOSS:\n'+str(batch_conf))
+                print('\nTOTAL LOSS: '+str(batch_loss))
                 print('\n========== BATCH: '+str(ba+1)+' END ==========')
             EPOCH_LOSSES.append(np.mean(BATCH_LOSSES))
             print('\n*** AVERAGE: '+str(EPOCH_LOSSES[-1])+' ***')
@@ -93,8 +93,8 @@ if __name__ == '__main__':
             print('\n*** TEST ***')
             minibatch, actual_data = next_batch(is_training=False)
             _, _, batch_loc, batch_conf, batch_loss = ssd.eval(minibatch, actual_data, False)
-            print('\nLOC LOSS: '+str(batch_loc))
-            print('\nCONF LOSS: '+str(batch_conf))
+            print('\nLOC LOSS:\n'+str(batch_loc))
+            print('\nCONF LOSS:\n'+str(batch_conf))
             print('\nTOTAL LOSS: '+str(batch_loss))
             print('\n========== EPOCH: '+str(ep+1)+' END ==========')
             

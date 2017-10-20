@@ -60,7 +60,7 @@ class Matcher:
                         cy = self.default_boxes[i][y][x][j][1] + offset[1]
                         height = self.default_boxes[i][y][x][j][2] + offset[2]
                         width = self.default_boxes[i][y][x][j][3] + offset[3]
-                        box = [cy, cy, height, width]
+                        box = [cy, cy, width, height]
                         anchors[i][y][x][j] = box
                         pred_conf = pred_confs[index]
                         prob = np,amax(np.exp(pred_conf) / (np.sum(np.exp(pred_conf)) + 1e-5))

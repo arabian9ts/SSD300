@@ -69,6 +69,6 @@ def generate_boxes(fmap_shapes):
                     box_width = s_k * np.sqrt(ratio)
                     box_height = s_k / np.sqrt(ratio)
 
-                    default_boxes.append([center_x, center_y, box_height, box_width])
+                    default_boxes.append([center_x, center_y, box_width, box_height])
                     
     return default_boxes
