@@ -13,6 +13,7 @@ matplotlib.use('Agg')
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
+import cv2
 import sys
 import datetime
 import tensorboard as tf
@@ -70,13 +71,22 @@ if __name__ == '__main__':
 
         # parameter saver
         saver = tf.train.Saver()
-        if 2 == len(sys.argv) and 'eval' == sys.argv[1]:
+
+        # eval and predict object on a specified image.
+        if 3 == len(sys.argv) and 'eval' == sys.argv[1]:
             saver.restore(sess, './checkpoints/params.ckpt')
-            minibatch, actual_data = next_batch(is_training=True)
-            _, _, batch_loc, batch_conf, batch_loss = ssd.eval(minibatch, actual_data, False)
-            print(batch_loc)
-            print(batch_conf)
-            print(batch_loss)
+            img = cv2.imread(sys.argv[2], 1)
+            h = img.shape[0]
+            w = img.shape[1]
+            confs, locs = ssd.eval(img, actual_data, False)
+            if len(confs) and len(locs):
+                for conf, loc in zip(confs, locs):
+                    cv2.rectangle(img, (int(loc[0]*w), int(loc[1]*h)), (int(loc[2]*w), int(loc[3]*h)), (0, 0, 255), 3)
+
+                cv2.namedWindow("img", cv2.WINDOW_NORMAL)
+                cv2.imshow("img", img)
+                cv2.waitKey(0)
+                cv2.destroyAllWindows()
             sys.exit()
 
         print('\nSTART LEARNING')
