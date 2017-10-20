@@ -70,7 +70,7 @@ if __name__ == '__main__':
 
         # parameter saver
         saver = tf.train.Saver()
-        if len(sys.argv) == 2 and 'eval' == sys.argv[2]:
+        if 2 == len(sys.argv) and 'eval' == sys.argv[1]:
             saver.restore(sess, './checkpoints/params.ckpt')
             minibatch, actual_data = next_batch(is_training=True)
             _, _, batch_loc, batch_conf, batch_loss = ssd.eval(minibatch, actual_data, False)
