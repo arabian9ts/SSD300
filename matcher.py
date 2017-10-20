@@ -31,45 +31,24 @@ class Matcher:
         self.fmap_shapes = fmap_shapes
         self.default_boxes = default_boxes
 
-        
-    def apply_prediction(self, pred_confs, pred_locs):
+    
+    def detect_objects(self, pred_confs, pred_locs):
         """
-        apply prediction to boxes(shaping boxes).
+        this method returns detected objects list (means high confidences locs and its labels)
 
         Args:
-            pred_confs: predicated confidences
-            pred_locs: predicated locations
+            pred_confs: predicated confidences ( output of matching() )
+            pred_locs: predicated locations ( output of matching() )
         Returns:
-            confidences list and anchor boxes
+            
         """
-        index = 0
-        confs = []
-        anchors = [
-            [[[None for _ in range(boxes[i])]
-            for _ in range(self.fmap_shapes[1])]
-            for _ in range(self.fmap_shapes[2])]
-            for i in range(len(boxes))
-        ]
-
-        for i in range(len(boxes)):
-            for y in range(self.fmap_shapes[1]):
-                for x in range(self.fmap_shapes[2]):
-                    for j in range(boxes[i]):
-                        offset = pred_locs[index]
-                        cx = self.default_boxes[i][y][x][j][0] + offset[0]
-                        cy = self.default_boxes[i][y][x][j][1] + offset[1]
-                        height = self.default_boxes[i][y][x][j][2] + offset[2]
-                        width = self.default_boxes[i][y][x][j][3] + offset[3]
-                        box = [cy, cy, width, height]
-                        anchors[i][y][x][j] = box
-                        pred_conf = pred_confs[index]
-                        prob = np,amax(np.exp(pred_conf) / (np.sum(np.exp(pred_conf)) + 1e-5))
-                        pred_label = np.argmax(pred_conf)
-
-                        confs.append(Box(box, prob, pred_label))
-                        index += 1
-        
-        return confs, anchors
+        detected_locs = []
+        detected_labels = []
+        for i in range(len(pred_confs)):
+            if 0.5 < np.amax(pred_confs[i]):
+                detected_locs.append(np.argmax(pred_confs[i]))
+                detected_confs.append(detected_locs[i])
+        return detected_locs, detected_labels
         
 
     def extract_highest_indicies(self, pred_confs, max_length):
