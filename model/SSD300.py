@@ -48,7 +48,7 @@ class SSD300:
 
     # evaluate loss
     def eval(self, images, actual_data, is_training):
-        if is_training:
+        if not is_training:
             feature_maps, pred_confs, pred_locs = self.sess.run(self.pred_set, feed_dict={self.input: images})
             return pred_confs, pred_locs
 
