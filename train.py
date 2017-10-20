@@ -78,7 +78,8 @@ if __name__ == '__main__':
             img = cv2.imread(sys.argv[1], 1)
             h = img.shape[0]
             w = img.shape[1]
-            confs, locs = ssd.eval(images=img, actual_data=None, is_training=False)
+            img = cv2.resize(img,(300/w, 300/h))
+            confs, locs = ssd.eval(images=[img], actual_data=None, is_training=False)
             if len(confs) and len(locs):
                 for conf, loc in zip(confs, locs):
                     cv2.rectangle(img, (int(loc[0]*w), int(loc[1]*h)), (int(loc[2]*w), int(loc[3]*h)), (0, 0, 255), 3)
