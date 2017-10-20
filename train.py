@@ -73,12 +73,12 @@ if __name__ == '__main__':
         saver = tf.train.Saver()
 
         # eval and predict object on a specified image.
-        if 3 == len(sys.argv) and 'eval' == sys.argv[1]:
+        if 2 == len(sys.argv):
             saver.restore(sess, './checkpoints/params.ckpt')
-            img = cv2.imread(sys.argv[2], 1)
+            img = cv2.imread(sys.argv[1], 1)
             h = img.shape[0]
             w = img.shape[1]
-            confs, locs = ssd.eval(img, actual_data, False)
+            confs, locs = ssd.eval(images=img, actual_data=None, is_training=False)
             if len(confs) and len(locs):
                 for conf, loc in zip(confs, locs):
                     cv2.rectangle(img, (int(loc[0]*w), int(loc[1]*h)), (int(loc[2]*w), int(loc[3]*h)), (0, 0, 255), 3)
