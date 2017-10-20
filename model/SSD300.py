@@ -48,6 +48,9 @@ class SSD300:
 
     # evaluate loss
     def eval(self, images, actual_data, is_training):
+        if is_training:
+            feature_maps, pred_confs, pred_locs = self.sess.run(self.pred_set, feed_dict={self.input: images})
+            return pred_confs, pred_locs
 
         # ================ RESET / EVAL ================ #
         actual_labels = []
@@ -67,7 +70,6 @@ class SSD300:
             ex_gt_labels.append(t_gtl)
             ex_gt_boxes.append(t_gtb)
 
-        feature_maps, pred_confs, pred_locs = self.sess.run(self.pred_set, feed_dict={self.input: images})
 
         for i in range(len(images)):
             # extract ground truth info
@@ -87,8 +89,7 @@ class SSD300:
         self.sess.run(self.train_set, \
         feed_dict={self.input: images, self.pos: positives, self.neg: negatives, self.gt_labels: ex_gt_labels, self.gt_boxes: ex_gt_boxes})
 
-        if is_training:
-            self.sess.run(self.train_step, \
-            feed_dict={self.input: images, self.pos: positives, self.neg: negatives, self.gt_labels: ex_gt_labels, self.gt_boxes: ex_gt_boxes})
+        self.sess.run(self.train_step, \
+        feed_dict={self.input: images, self.pos: positives, self.neg: negatives, self.gt_labels: ex_gt_labels, self.gt_boxes: ex_gt_boxes})
 
         return pred_confs, pred_locs, batch_loc, batch_conf, batch_loss
