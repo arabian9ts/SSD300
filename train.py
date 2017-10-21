@@ -30,7 +30,6 @@ EPOCH = 50
 EPOCH_LOSSES = []
 # ============================== END ============================== #
 
-
 if __name__ == '__main__':
 
     # load pickle data set annotation
@@ -64,6 +63,25 @@ if __name__ == '__main__':
 
         return mini_batch, actual_data
 
+
+    def draw_marker(image_name=None, save=True):
+        if not image_name:
+            return Exception('not specified image name to be drawed')
+
+        img = cv2.imread(image_name, 1)
+        h = img.shape[0]
+        w = img.shape[1]
+        confs, locs = ssd.eval(images=[img], actual_data=None, is_training=False)
+        if len(confs) and len(locs):
+            for conf, loc in zip(confs, locs):
+                cv2.rectangle(img, (int(loc[0]*w), int(loc[1]*h)), (int(loc[2]*w), int(loc[3]*h)), (0, 0, 255), 3)
+
+        if save:
+            cv2.imwrite('./evaluated/'+image_name+'.jpg', img)
+
+        return img
+
+
     # tensorflow session
     with tf.Session() as sess:
         ssd = SSD300(sess)
@@ -75,18 +93,11 @@ if __name__ == '__main__':
         # eval and predict object on a specified image.
         if 2 == len(sys.argv):
             saver.restore(sess, './checkpoints/params.ckpt')
-            img = cv2.imread(sys.argv[1], 1)
-            h = img.shape[0]
-            w = img.shape[1]
-            confs, locs = ssd.eval(images=[img], actual_data=None, is_training=False)
-            if len(confs) and len(locs):
-                for conf, loc in zip(confs, locs):
-                    cv2.rectangle(img, (int(loc[0]*w), int(loc[1]*h)), (int(loc[2]*w), int(loc[3]*h)), (0, 0, 255), 3)
-
-                cv2.namedWindow("img", cv2.WINDOW_NORMAL)
-                cv2.imshow("img", img)
-                cv2.waitKey(0)
-                cv2.destroyAllWindows()
+            img = draw_marker(sys.argv[1], save=False)
+            cv2.namedWindow("img", cv2.WINDOW_NORMAL)
+            cv2.imshow("img", img)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
             sys.exit()
 
         print('\nSTART LEARNING')
@@ -111,10 +122,7 @@ if __name__ == '__main__':
 
             print('\n*** TEST ***')
             minibatch, actual_data = next_batch(is_training=False)
-            _, _, batch_loc, batch_conf, batch_loss = ssd.eval(minibatch, actual_data, False)
             print('\nLOC LOSS:\n'+str(batch_loc))
-            print('\nCONF LOSS:\n'+str(batch_conf))
-            print('\nTOTAL LOSS: '+str(batch_loss))
             print('\n========== EPOCH: '+str(ep+1)+' END ==========')
             
         print('\nEND LEARNING')
