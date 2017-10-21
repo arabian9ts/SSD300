@@ -23,10 +23,10 @@ class SSD300:
 
         # define input placeholder and initialize ssd instance
         self.input = tf.placeholder(shape=[None, 300, 300, 3], dtype=tf.float32)
-        ssd = SSD()
+        self.ssd = SSD()
 
         # build ssd network => feature-maps and confs and locs tensor is returned
-        fmaps, confs, locs = ssd.build(self.input, is_training=True)
+        fmaps, confs, locs = self.ssd.build(self.input, is_training=True)
 
         # zip running set of tensor
         self.pred_set = [fmaps, confs, locs]
@@ -38,7 +38,7 @@ class SSD300:
         print(len(self.dboxes))
 
         # required placeholder for loss
-        loss, loss_conf, loss_loc, self.pos, self.neg, self.gt_labels, self.gt_boxes = ssd.loss(len(self.dboxes))
+        loss, loss_conf, loss_loc, self.pos, self.neg, self.gt_labels, self.gt_boxes = self.ssd.loss(len(self.dboxes))
         self.train_set = [loss, loss_conf, loss_loc]
         optimizer = tf.train.AdamOptimizer(0.05)
         self.train_step = optimizer.minimize(loss)
@@ -48,10 +48,11 @@ class SSD300:
 
     # evaluate loss
     def eval(self, images, actual_data, is_training):
+        if not is_training:
+            feature_maps, pred_confs, pred_locs = self.sess.run(self.pred_set, feed_dict={self.input: images})
+            return pred_confs, pred_locs
 
         # ================ RESET / EVAL ================ #
-        actual_labels = []
-        actual_locs = []
         positives = []
         negatives = []
         ex_gt_labels = []
@@ -67,28 +68,30 @@ class SSD300:
             ex_gt_labels.append(t_gtl)
             ex_gt_boxes.append(t_gtb)
 
+
         feature_maps, pred_confs, pred_locs = self.sess.run(self.pred_set, feed_dict={self.input: images})
 
         for i in range(len(images)):
+            actual_labels = []
+            actual_locs = []
             # extract ground truth info
             for obj in actual_data[i]:
                 loc = obj[:4]
                 label = np.argmax(obj[4:])
 
                 # transform location for ssd-training
-                loc = corner2center(swap_width_height(loc))
+                loc = corner2center(loc)
 
                 actual_locs.append(loc)
                 actual_labels.append(label)
 
-            prepare_loss(pred_confs, pred_locs, actual_labels, actual_locs)
+            prepare_loss(pred_confs[i], pred_locs[i], actual_labels, actual_locs)
                 
         batch_loss, batch_conf, batch_loc = \
         self.sess.run(self.train_set, \
         feed_dict={self.input: images, self.pos: positives, self.neg: negatives, self.gt_labels: ex_gt_labels, self.gt_boxes: ex_gt_boxes})
 
-        if is_training:
-            self.sess.run(self.train_step, \
-            feed_dict={self.input: images, self.pos: positives, self.neg: negatives, self.gt_labels: ex_gt_labels, self.gt_boxes: ex_gt_boxes})
+        self.sess.run(self.train_step, \
+        feed_dict={self.input: images, self.pos: positives, self.neg: negatives, self.gt_labels: ex_gt_labels, self.gt_boxes: ex_gt_boxes})
 
         return pred_confs, pred_locs, batch_loc, batch_conf, batch_loss

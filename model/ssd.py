@@ -45,6 +45,7 @@ import tensorflow as tf
 import numpy as np
 
 from model.base import VGG16
+from model.policy import *
 from model.default_box import *
 from model.tf_material import *
 
@@ -159,3 +160,26 @@ class SSD(VGG16):
         loss = tf.reduce_sum(loss_conf + loss_loc)
 
         return loss, loss_conf, loss_loc, pos, neg, gt_labels, gt_boxes
+
+
+    def detect_objects(self, pred_confs, pred_locs):
+        """
+        this method returns detected objects list (means high confidences locs and its labels)
+        Args is computed Tensor.
+
+        Args:
+            pred_confs: predicated confidences ( output of matching() )
+            pred_locs: predicated locations ( output of matching() )
+        Returns:
+            detected locs and its labels
+        """
+
+        detected_locs = []
+        detected_labels = []
+        for conf, loc in zip(pred_confs[0], pred_locs[0]):
+            possibility = np.amax(np.exp(conf) / (np.sum(np.exp(conf)) + 1e-3))
+            if 0.7 < possibility and (np.argmax(conf) is not classes-1):
+                detected_labels.append(np.argmax(conf))
+                detected_locs.append(loc)
+        
+        return detected_labels, detected_locs

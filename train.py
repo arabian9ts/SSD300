@@ -13,6 +13,8 @@ matplotlib.use('Agg')
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
+import cv2
+import sys
 import datetime
 import tensorboard as tf
 import numpy as np
@@ -27,7 +29,6 @@ BATCH_SIZE = 100
 EPOCH = 50
 EPOCH_LOSSES = []
 # ============================== END ============================== #
-
 
 if __name__ == '__main__':
 
@@ -62,6 +63,31 @@ if __name__ == '__main__':
 
         return mini_batch, actual_data
 
+
+    def draw_marker(image_name, save):
+        if image_name is None:
+            return Exception('not specified image name to be drawed')
+
+        img = cv2.imread('./voc2007/'+image_name, 1)
+        h = img.shape[0]
+        w = img.shape[1]
+        reshaped = cv2.resize(img, (300, 300))
+        reshaped = reshaped / 255
+        pred_confs, pred_locs = ssd.eval(images=[reshaped], actual_data=None, is_training=False)
+        labels, locs = ssd.ssd.detect_objects(pred_confs, pred_locs)
+        if len(labels) and len(locs):
+            for label, loc in zip(labels, locs):
+                loc = center2corner(loc)
+                cv2.rectangle(img, (int(loc[0]*w), int(loc[1]*h)), (int(loc[2]*w), int(loc[3]*h)), (0, 0, 255), 3)
+
+        if save:
+            if not os.path.exists('./evaluated'):
+                os.mkdir('./evaluated')
+            cv2.imwrite('./evaluated/'+image_name, img)
+
+        return img
+
+
     # tensorflow session
     with tf.Session() as sess:
         ssd = SSD300(sess)
@@ -69,6 +95,16 @@ if __name__ == '__main__':
 
         # parameter saver
         saver = tf.train.Saver()
+
+        # eval and predict object on a specified image.
+        if 2 == len(sys.argv):
+            saver.restore(sess, './checkpoints/params.ckpt')
+            img = draw_marker(sys.argv[1], save=False)
+            cv2.namedWindow("img", cv2.WINDOW_NORMAL)
+            cv2.imshow("img", img)
+            cv2.waitKey(0)
+            cv2.destroyAllWindows()
+            sys.exit()
 
         print('\nSTART LEARNING')
         print('==================== '+str(datetime.datetime.now())+' ====================')
@@ -81,9 +117,9 @@ if __name__ == '__main__':
                 BATCH_LOSSES.append(batch_loss)
 
                 print('\n********** BATCH LOSS **********')
-                print('\nLOC LOSS: '+str(batch_loc))
-                print('\nCONF LOSS: '+str(batch_conf))
-                print('\n       TOTAL LOSS: '+str(batch_loss))
+                print('\nLOC LOSS:\n'+str(batch_loc))
+                print('\nCONF LOSS:\n'+str(batch_conf))
+                print('\nTOTAL LOSS: '+str(batch_loss))
                 print('\n========== BATCH: '+str(ba+1)+' END ==========')
             EPOCH_LOSSES.append(np.mean(BATCH_LOSSES))
             print('\n*** AVERAGE: '+str(EPOCH_LOSSES[-1])+' ***')
@@ -91,11 +127,10 @@ if __name__ == '__main__':
             saver.save(sess, './checkpoints/params.ckpt')
 
             print('\n*** TEST ***')
-            minibatch, actual_data = next_batch(is_training=False)
-            _, _, batch_loc, batch_conf, batch_loss = ssd.eval(minibatch, actual_data, False)
-            print('\nLOC LOSS: '+str(batch_loc))
-            print('\nCONF LOSS: '+str(batch_conf))
-            print('\nTOTAL LOSS: '+str(batch_loss))
+            id = np.random.choice(len(test_keys))
+            name = test_keys[id]
+            draw_marker(image_name=name, save=True)
+            print('\nSaved Evaled Image\n')
             print('\n========== EPOCH: '+str(ep+1)+' END ==========')
             
         print('\nEND LEARNING')
