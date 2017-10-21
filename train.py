@@ -84,7 +84,7 @@ if __name__ == '__main__':
         if save:
             if not os.path.exists('./evaluated'):
                 os.mkdir('./evaluated')
-            cv2.imwrite('./evaluated/'+image_name+'.jpg', img)
+            cv2.imwrite('./evaluated/'+image_name, img)
 
         return img
 
