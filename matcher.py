@@ -30,25 +30,6 @@ class Matcher:
 
         self.fmap_shapes = fmap_shapes
         self.default_boxes = default_boxes
-
-    
-    def detect_objects(self, pred_confs, pred_locs):
-        """
-        this method returns detected objects list (means high confidences locs and its labels)
-
-        Args:
-            pred_confs: predicated confidences ( output of matching() )
-            pred_locs: predicated locations ( output of matching() )
-        Returns:
-            
-        """
-        detected_locs = []
-        detected_labels = []
-        for i in range(len(pred_confs)):
-            if 0.5 < np.amax(pred_confs[i]):
-                detected_locs.append(np.argmax(pred_confs[i]))
-                detected_confs.append(detected_locs[i])
-        return detected_locs, detected_labels
         
 
     def extract_highest_indicies(self, pred_confs, max_length):
