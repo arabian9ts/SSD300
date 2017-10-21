@@ -71,6 +71,8 @@ class SSD300:
             ex_gt_boxes.append(t_gtb)
 
 
+        feature_maps, pred_confs, pred_locs = self.sess.run(self.pred_set, feed_dict={self.input: images})
+        
         for i in range(len(images)):
             # extract ground truth info
             for obj in actual_data[i]:
