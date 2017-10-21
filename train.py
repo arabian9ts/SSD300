@@ -82,6 +82,8 @@ if __name__ == '__main__':
                 cv2.rectangle(img, (int(loc[0]*w), int(loc[1]*h)), (int(loc[2]*w), int(loc[3]*h)), (0, 0, 255), 3)
 
         if save:
+            if not os.path.exists('./evaluated'):
+                os.mkdir('./evaluated')
             cv2.imwrite('./evaluated/'+image_name+'.jpg', img)
 
         return img
