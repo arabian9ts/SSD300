@@ -177,7 +177,7 @@ class SSD(VGG16):
         detected_labels = []
         for conf, loc in zip(pred_confs[0], pred_locs[0]):
             if 0.5 < np.amax(conf):
-                detected_confs.append(np.argmax(conf))
+                detected_labels.append(np.argmax(conf))
                 detected_locs.append(loc)
-                
-        return detected_locs, detected_labels
+
+        return detected_labels, detected_locs
