@@ -46,8 +46,8 @@ def corner2center(rect):
     """
     rect is defined as [ top_left_x, top_left_y, width, height ]
     """
-    center_x = rect[0] + rect[2] / 2
-    center_y = rect[1] + rect[3] / 2
+    center_x = (2 * rect[0] + rect[2]) * 0.5
+    center_y = (2 * rect[1] + rect[3]) * 0.5
 
     return [center_x, center_y, rect[2], rect[3]]
 
@@ -56,7 +56,7 @@ def center2corner(rect):
     """
     rect is defined as [ top_left_x, top_left_y, width, height ]
     """
-    corner_x = rect[0] - (rect[2] - rect[0])
-    corner_y = rect[1] - (rect[3] - rect[1])
+    corner_x = rect[0] - rect[2] * 0.5
+    corner_y = rect[1] - rect[3] * 0.5
 
     return [corner_x, corner_y, rect[2], rect[3]]
