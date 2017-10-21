@@ -71,14 +71,13 @@ if __name__ == '__main__':
         img = cv2.imread('./voc2007/'+image_name, 1)
         h = img.shape[0]
         w = img.shape[1]
-        img = cv2.resize(img, (300, 300))
-        img = img / 255
-        pred_confs, pred_locs = ssd.eval(images=[img], actual_data=None, is_training=False)
+        reshaped = cv2.resize(img, (300, 300))
+        reshaped = reshaped / 255
+        pred_confs, pred_locs = ssd.eval(images=[reshaped], actual_data=None, is_training=False)
         labels, locs = ssd.ssd.detect_objects(pred_confs, pred_locs)
-        img = img * 255
-        img = cv2.resize(img, (w, h))
         if len(labels) and len(locs):
             for label, loc in zip(labels, locs):
+                loc = center2corner(loc)
                 cv2.rectangle(img, (int(loc[0]*w), int(loc[1]*h)), (int(loc[2]*w), int(loc[3]*h)), (0, 0, 255), 3)
 
         if save:
