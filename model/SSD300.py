@@ -53,8 +53,6 @@ class SSD300:
             return pred_confs, pred_locs
 
         # ================ RESET / EVAL ================ #
-        actual_labels = []
-        actual_locs = []
         positives = []
         negatives = []
         ex_gt_labels = []
@@ -74,6 +72,8 @@ class SSD300:
         feature_maps, pred_confs, pred_locs = self.sess.run(self.pred_set, feed_dict={self.input: images})
 
         for i in range(len(images)):
+            actual_labels = []
+            actual_locs = []
             # extract ground truth info
             for obj in actual_data[i]:
                 loc = obj[:4]
@@ -85,7 +85,7 @@ class SSD300:
                 actual_locs.append(loc)
                 actual_labels.append(label)
 
-            prepare_loss(pred_confs, pred_locs, actual_labels, actual_locs)
+            prepare_loss(pred_confs[i], pred_locs[i], actual_labels, actual_locs)
                 
         batch_loss, batch_conf, batch_loc = \
         self.sess.run(self.train_set, \
