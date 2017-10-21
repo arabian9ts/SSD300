@@ -23,10 +23,10 @@ class SSD300:
 
         # define input placeholder and initialize ssd instance
         self.input = tf.placeholder(shape=[None, 300, 300, 3], dtype=tf.float32)
-        ssd = SSD()
+        self.ssd = SSD()
 
         # build ssd network => feature-maps and confs and locs tensor is returned
-        fmaps, confs, locs = ssd.build(self.input, is_training=True)
+        fmaps, confs, locs = self.ssd.build(self.input, is_training=True)
 
         # zip running set of tensor
         self.pred_set = [fmaps, confs, locs]
@@ -38,7 +38,7 @@ class SSD300:
         print(len(self.dboxes))
 
         # required placeholder for loss
-        loss, loss_conf, loss_loc, self.pos, self.neg, self.gt_labels, self.gt_boxes = ssd.loss(len(self.dboxes))
+        loss, loss_conf, loss_loc, self.pos, self.neg, self.gt_labels, self.gt_boxes = self.ssd.loss(len(self.dboxes))
         self.train_set = [loss, loss_conf, loss_loc]
         optimizer = tf.train.AdamOptimizer(0.05)
         self.train_step = optimizer.minimize(loss)
@@ -72,7 +72,7 @@ class SSD300:
 
 
         feature_maps, pred_confs, pred_locs = self.sess.run(self.pred_set, feed_dict={self.input: images})
-        
+
         for i in range(len(images)):
             # extract ground truth info
             for obj in actual_data[i]:
