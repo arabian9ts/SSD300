@@ -45,6 +45,7 @@ import tensorflow as tf
 import numpy as np
 
 from model.base import VGG16
+from model.policy import *
 from model.default_box import *
 from model.tf_material import *
 
@@ -176,8 +177,9 @@ class SSD(VGG16):
         detected_locs = []
         detected_labels = []
         for conf, loc in zip(pred_confs[0], pred_locs[0]):
-            if 0.5 < np.amax(conf):
+            possibility = np.amax(np.exp(conf) / (np.sum(np.exp(conf)) + 1e-3))
+            if 0.7 < possibility and (np.argmax(conf) is not classes-1):
                 detected_labels.append(np.argmax(conf))
                 detected_locs.append(loc)
-
+        
         return detected_labels, detected_locs
