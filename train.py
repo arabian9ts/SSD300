@@ -64,16 +64,21 @@ if __name__ == '__main__':
         return mini_batch, actual_data
 
 
-    def draw_marker(image_name=None, save=True):
-        if not image_name:
+    def draw_marker(image_name, save):
+        if image_name is None:
             return Exception('not specified image name to be drawed')
 
-        img = cv2.imread(image_name, 1)
+        img = cv2.imread('./voc2007/'+image_name, 1)
         h = img.shape[0]
         w = img.shape[1]
-        confs, locs = ssd.eval(images=[img], actual_data=None, is_training=False)
-        if len(confs) and len(locs):
-            for conf, loc in zip(confs, locs):
+        img = cv2.resize(img, (300, 300))
+        img = img / 255
+        pred_confs, pred_locs = ssd.eval(images=[img], actual_data=None, is_training=False)
+        labels, locs = ssd.ssd.detect_objects(pred_confs, pred_locs)
+        img = img * 255
+        img = cv2.resize(img, (w, h))
+        if len(labels) and len(locs):
+            for label, loc in zip(labels, locs):
                 cv2.rectangle(img, (int(loc[0]*w), int(loc[1]*h)), (int(loc[2]*w), int(loc[3]*h)), (0, 0, 255), 3)
 
         if save:
@@ -121,8 +126,10 @@ if __name__ == '__main__':
             saver.save(sess, './checkpoints/params.ckpt')
 
             print('\n*** TEST ***')
-            minibatch, actual_data = next_batch(is_training=False)
-            print('\nLOC LOSS:\n'+str(batch_loc))
+            id = np.random.choice(len(test_keys))
+            name = test_keys[id]
+            draw_marker(image_name=name, save=True)
+            print('\nSaved Evaled Image\n')
             print('\n========== EPOCH: '+str(ep+1)+' END ==========')
             
         print('\nEND LEARNING')
