@@ -178,7 +178,7 @@ class SSD(VGG16):
         detected_labels = []
         for conf, loc in zip(pred_confs[0], pred_locs[0]):
             possibility = np.amax(np.exp(conf) / (np.sum(np.exp(conf)) + 1e-3))
-            if 0.7 < possibility and (np.argmax(conf) is not classes-1):
+            if 0.7 < possibility and classes != np.argmax(conf):
                 detected_labels.append(np.argmax(conf))
                 detected_locs.append(loc)
         
