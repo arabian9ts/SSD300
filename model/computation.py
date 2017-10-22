@@ -49,7 +49,7 @@ def corner2center(rect):
     center_x = (2 * rect[0] + rect[2]) * 0.5
     center_y = (2 * rect[1] + rect[3]) * 0.5
 
-    return [center_x, center_y, rect[2], rect[3]]
+    return [center_x, center_y, abs(rect[2]), abs(rect[3])]
 
 
 def center2corner(rect):
@@ -59,4 +59,4 @@ def center2corner(rect):
     corner_x = rect[0] - rect[2] * 0.5
     corner_y = rect[1] - rect[3] * 0.5
 
-    return [corner_x, corner_y, rect[2], rect[3]]
+    return [corner_x, corner_y, abs(rect[2]), abs(rect[3])]
