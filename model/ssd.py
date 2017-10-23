@@ -84,7 +84,7 @@ class SSD(VGG16):
         self.conv11_1 = convolution(self.conv10_2, 'conv11_1')
         self.conv11_2 = convolution(self.conv11_1, 'conv11_2', stride=3)
 
-        print('================== Feature Map Below ==================')
+        print('================== Feature Map is Below ==================')
 
         self.feature_maps = []
         # extra feature maps
@@ -178,7 +178,7 @@ class SSD(VGG16):
         detected_labels = []
         for conf, loc in zip(pred_confs[0], pred_locs[0]):
             possibility = np.amax(np.exp(conf) / (np.sum(np.exp(conf)) + 1e-3))
-            if 0.7 < possibility and classes != np.argmax(conf):
+            if 0.7 < possibility and classes-1 != np.argmax(conf):
                 detected_labels.append(np.argmax(conf))
                 detected_locs.append(loc)
         

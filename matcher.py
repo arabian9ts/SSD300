@@ -101,12 +101,24 @@ class Matcher:
         
         # compute jaccard for each default box
         for gt_label, gt_box in zip(actual_labels, actual_locs):
+            near_jacc = 0.
+            near_index = None
             for i in range(len(matches)):
                 jacc = jaccard(gt_box, self.default_boxes[i])
                 if 0.5 <= jacc:
                     matches[i] = Box(gt_box, gt_label)
                     pos += 1
-
+                else:
+                    if near_jacc < jacc:
+                        near_miss = jacc
+                        near_index = i
+            
+            # prevent pos from becoming 0 <=> loss_loc is 0
+            # force to match most near box to ground truth box
+            if near_index and (matches[near_index] is None):
+                matches[near_index] = Box(gt_box, gt_label)
+                pos += 1
+            
         indicies = self.extract_highest_indicies(pred_confs, pos*3)
 
         for i in indicies:
@@ -114,7 +126,7 @@ class Matcher:
                 matches[i] = Box([], classes-1)
                 neg += 1
 
-        for i, box in zip(range(len(matches)), matches):
+        for box in matches:
             # if box is None
             # => Neither positive nor negative
             if not box:
@@ -134,8 +146,8 @@ class Matcher:
             else:
                 pos_list.append(1)
                 neg_list.append(0)
-                expanded_gt_labels.append(gt_label)
-                expanded_gt_locs.append(gt_box)
+                expanded_gt_labels.append(box.index)
+                expanded_gt_locs.append(box.loc)
 
 
         return pos_list, neg_list, expanded_gt_labels, expanded_gt_locs

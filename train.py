@@ -78,6 +78,7 @@ if __name__ == '__main__':
         if len(labels) and len(locs):
             for label, loc in zip(labels, locs):
                 loc = center2corner(loc)
+                loc = convert2diagonal_points(loc)
                 cv2.rectangle(img, (int(loc[0]*w), int(loc[1]*h)), (int(loc[2]*w), int(loc[3]*h)), (0, 0, 255), 3)
 
         if save:
