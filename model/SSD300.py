@@ -80,8 +80,7 @@ class SSD300:
                 label = np.argmax(obj[4:])
 
                 # transform location for voc2007
-                loc[2] = loc[2] - loc[0]
-                loc[3] = loc[3] - loc[1]
+                loc = convert2wh(loc)
                 loc = corner2center(loc)
 
                 actual_locs.append(loc)
