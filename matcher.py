@@ -126,7 +126,7 @@ class Matcher:
                 matches[i] = Box([], classes-1)
                 neg += 1
 
-        for i, box in zip(range(len(matches)), matches):
+        for box in matches:
             # if box is None
             # => Neither positive nor negative
             if not box:
@@ -146,8 +146,8 @@ class Matcher:
             else:
                 pos_list.append(1)
                 neg_list.append(0)
-                expanded_gt_labels.append(gt_label)
-                expanded_gt_locs.append(gt_box)
+                expanded_gt_labels.append(box.index)
+                expanded_gt_locs.append(box.loc)
 
 
         return pos_list, neg_list, expanded_gt_labels, expanded_gt_locs
