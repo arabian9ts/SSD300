@@ -60,3 +60,31 @@ def center2corner(rect):
     corner_y = rect[1] - rect[3] * 0.5
 
     return [corner_x, corner_y, abs(rect[2]), abs(rect[3])]
+
+
+def convert2diagonal_points(rect):
+    """
+    convert rect format
+
+    Args:
+        input format is...
+        [ top_left_x, top_left_y, width, height ]
+    Returns:
+        output format is...
+        [ top_left_x, top_left_y, bottom_right_x, bottom_right_y ]
+    """
+    return [rect[0], rect[1], rect[0]+rect[2], rect[1]+rect[3]]
+
+
+def convert2wh(rect):
+    """
+    convert rect format
+
+    Args:
+        input format is...
+        [ top_left_x, top_left_y, bottom_right_x, bottom_right_y ]
+    Returns:
+        output format is...
+        [ top_left_x, top_left_y, width, height ]
+    """
+    return [rect[0], rect[1], rect[2]-rect[0], rect[3]+rect[1]]
