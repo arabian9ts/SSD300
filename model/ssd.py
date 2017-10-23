@@ -84,7 +84,7 @@ class SSD(VGG16):
         self.conv11_1 = convolution(self.conv10_2, 'conv11_1')
         self.conv11_2 = convolution(self.conv11_1, 'conv11_2', stride=3)
 
-        print('================== Feature Map Below ==================')
+        print('================== Feature Map is Below ==================')
 
         self.feature_maps = []
         # extra feature maps
