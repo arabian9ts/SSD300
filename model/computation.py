@@ -87,4 +87,4 @@ def convert2wh(rect):
         output format is...
         [ top_left_x, top_left_y, width, height ]
     """
-    return [rect[0], rect[1], rect[2]-rect[0], rect[3]+rect[1]]
+    return [rect[0], rect[1], rect[2]-rect[0], rect[3]-rect[1]]
