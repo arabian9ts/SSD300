@@ -115,7 +115,7 @@ class Matcher:
             
             # prevent pos from becoming 0 <=> loss_loc is 0
             # force to match most near box to ground truth box
-            if near_index and (matches[near_index] is None):
+            if 0 == pos and near_index and (matches[near_index] is None):
                 matches[near_index] = Box(gt_box, gt_label)
                 pos += 1
             
