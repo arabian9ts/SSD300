@@ -79,7 +79,7 @@ if __name__ == '__main__':
             for label, loc in zip(labels, locs):
                 loc = center2corner(loc)
                 loc = convert2diagonal_points(loc)
-                cv2.rectangle(img, (int(loc[0]*w), int(loc[1]*h)), (int(loc[2]*w), int(loc[3]*h)), (0, 0, 255), 3)
+                cv2.rectangle(img, (int(loc[0]*w), int(loc[1]*h)), (int(loc[2]*w), int(loc[3]*h)), (0, 0, 255), 1)
 
         if save:
             if not os.path.exists('./evaluated'):
