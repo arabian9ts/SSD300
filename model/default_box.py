@@ -18,8 +18,8 @@ def scale(k):
     Args: feature map number
     Returns: scale
     """
-    s_min = 0.2
-    s_max = 0.9
+    s_min = 0.1
+    s_max = 0.95
     m = 6.0
     s_k = s_min + (s_max - s_min) * k / (m - 1.0)
     return s_k
