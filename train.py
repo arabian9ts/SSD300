@@ -13,6 +13,7 @@ matplotlib.use('Agg')
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
+import gc
 import cv2
 import sys
 import datetime
@@ -116,6 +117,8 @@ if __name__ == '__main__':
                 minibatch, actual_data = next_batch(is_training=True)
                 _, _, batch_loc, batch_conf, batch_loss = ssd.eval(minibatch, actual_data, True)
                 BATCH_LOSSES.append(batch_loss)
+                del minibatch
+                gc.collect()
 
                 print('\n********** BATCH LOSS **********')
                 print('\nLOC LOSS:\n'+str(batch_loc))
