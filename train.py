@@ -108,6 +108,8 @@ if __name__ == '__main__':
             cv2.destroyAllWindows()
             sys.exit()
 
+        saver.restore(sess, './checkpoints/params.ckpt')
+
         print('\nSTART LEARNING')
         print('==================== '+str(datetime.datetime.now())+' ====================')
 
@@ -134,7 +136,7 @@ if __name__ == '__main__':
             id = np.random.choice(len(test_keys))
             name = test_keys[id]
             draw_marker(image_name=name, save=True)
-            print('\nSaved Evaled Image\n')
+            print('\nSaved Evaled Image')
             print('\n========== EPOCH: '+str(ep+1)+' END ==========')
             
         print('\nEND LEARNING')
