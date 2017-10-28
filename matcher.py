@@ -115,28 +115,28 @@ class Matcher:
             
             # prevent pos from becoming 0 <=> loss_loc is 0
             # force to match most near box to ground truth box
-            if 0 == pos and near_index and (matches[near_index] is None):
+            if near_index is not None and matches[near_index] is None:
                 matches[near_index] = Box(gt_box, gt_label)
                 pos += 1
             
         indicies = self.extract_highest_indicies(pred_confs, pos*3)
 
         for i in indicies:
-            if classes != np.argmax(pred_confs[i]):
+            if classes-1 != np.argmax(pred_confs[i]):
                 matches[i] = Box([], classes-1)
                 neg += 1
 
         for box in matches:
             # if box is None
             # => Neither positive nor negative
-            if not box:
+            if box is None:
                 pos_list.append(0)
                 neg_list.append(0)
                 expanded_gt_labels.append(classes-1)
                 expanded_gt_locs.append([0]*4)
             # if box's loc is empty
             # => Negative
-            elif not box.loc:
+            elif 0 == len(box.loc):
                 pos_list.append(0)
                 neg_list.append(1)
                 expanded_gt_labels.append(classes-1)
