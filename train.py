@@ -13,6 +13,7 @@ matplotlib.use('Agg')
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
+import gc
 import cv2
 import sys
 import datetime
@@ -25,7 +26,7 @@ from util.util import *
 from model.SSD300 import *
 
 # ====================== Training Parameters ====================== #
-BATCH_SIZE = 100
+BATCH_SIZE = 20
 EPOCH = 50
 EPOCH_LOSSES = []
 # ============================== END ============================== #
@@ -36,28 +37,18 @@ if __name__ == '__main__':
     with open('VOC2007.pkl', 'rb') as f:
         data = pickle.load(f)
         keys = sorted(data.keys())
-        slicer = int(len(keys) * 0.8)
-        train_keys = keys[:slicer]
-        test_keys = keys[slicer:]
-        BATCH = int(len(train_keys) / BATCH_SIZE)
+        BATCH = int(len(keys) / BATCH_SIZE)
 
-    def next_batch(is_training):
+    def next_batch():
         mini_batch = []
         actual_data = []
-        if is_training:
-            indicies = np.random.choice(len(train_keys), BATCH_SIZE)
-        else:
-            indicies = np.random.choice(len(test_keys), BATCH_SIZE)
+        indicies = np.random.choice(len(keys), BATCH_SIZE)
 
         for idx in indicies:
             # make images mini batch
-            if is_training:
-                img = load_image('voc2007/'+train_keys[idx])
-                actual_data.append(data[train_keys[idx]])
-            else:
-                img = load_image('voc2007/'+test_keys[idx])
-                actual_data.append(data[test_keys[idx]])
-
+            img = load_image('voc2007/'+keys[idx])
+            actual_data.append(data[keys[idx]])
+            
             img = img.reshape((300, 300, 3))
             mini_batch.append(img)
 
@@ -79,7 +70,7 @@ if __name__ == '__main__':
             for label, loc in zip(labels, locs):
                 loc = center2corner(loc)
                 loc = convert2diagonal_points(loc)
-                cv2.rectangle(img, (int(loc[0]*w), int(loc[1]*h)), (int(loc[2]*w), int(loc[3]*h)), (0, 0, 255), 3)
+                cv2.rectangle(img, (int(loc[0]*w), int(loc[1]*h)), (int(loc[2]*w), int(loc[3]*h)), (0, 0, 255), 1)
 
         if save:
             if not os.path.exists('./evaluated'):
@@ -107,31 +98,38 @@ if __name__ == '__main__':
             cv2.destroyAllWindows()
             sys.exit()
 
+        # saver.restore(sess, './checkpoints/params.ckpt')
+
         print('\nSTART LEARNING')
         print('==================== '+str(datetime.datetime.now())+' ====================')
 
         for ep in range(EPOCH):
             BATCH_LOSSES = []
             for ba in range(BATCH):
-                minibatch, actual_data = next_batch(is_training=True)
+                minibatch, actual_data = next_batch()
                 _, _, batch_loc, batch_conf, batch_loss = ssd.eval(minibatch, actual_data, True)
                 BATCH_LOSSES.append(batch_loss)
+                del minibatch
+                gc.collect()
 
                 print('\n********** BATCH LOSS **********')
                 print('\nLOC LOSS:\n'+str(batch_loc))
                 print('\nCONF LOSS:\n'+str(batch_conf))
                 print('\nTOTAL LOSS: '+str(batch_loss))
-                print('\n========== BATCH: '+str(ba+1)+' END ==========')
+                print('\n========== BATCH: '+str(ba+1)+' / EPOCH: '+str(ep+1)+' END ==========')
             EPOCH_LOSSES.append(np.mean(BATCH_LOSSES))
             print('\n*** AVERAGE: '+str(EPOCH_LOSSES[-1])+' ***')
 
             saver.save(sess, './checkpoints/params.ckpt')
 
+            '''
             print('\n*** TEST ***')
-            id = np.random.choice(len(test_keys))
-            name = test_keys[id]
+            id = np.random.choice(len(keys))
+            name = keys[id]
             draw_marker(image_name=name, save=True)
-            print('\nSaved Evaled Image\n')
+            print('\nSaved Evaled Image')
+            '''
+
             print('\n========== EPOCH: '+str(ep+1)+' END ==========')
             
         print('\nEND LEARNING')

@@ -176,9 +176,14 @@ class SSD(VGG16):
 
         detected_locs = []
         detected_labels = []
+        hist = [0 for _ in range(21)]
         for conf, loc in zip(pred_confs[0], pred_locs[0]):
-            possibility = np.amax(np.exp(conf) / (np.sum(np.exp(conf)) + 1e-3))
-            if 0.7 < possibility and classes-1 != np.argmax(conf):
+            hist[np.argmax(conf)] += 1
+        print(hist)
+        possibilities = [np.exp(np.argmax(conf)) / (np.sum(np.exp(conf)) + 1e-3) for conf in pred_confs[0] if classes-1 != np.argmax(conf)]
+        indicies = np.argpartition(possibilities, -200)[-200:]
+        for conf, loc in zip(pred_confs[0][indicies], pred_locs[0][indicies]):
+            if classes-1 != np.argmax(conf):
                 detected_labels.append(np.argmax(conf))
                 detected_locs.append(loc)
         

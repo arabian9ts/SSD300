@@ -12,7 +12,7 @@ class Box:
     _loc = []
     _index = 0
 
-    def __init__(self, loc=None, index=None):
+    def __init__(self, loc, index):
         """
         initializer require all params
 
@@ -24,10 +24,8 @@ class Box:
         if (loc is None) or (index is None):
             raise NotSpecifiedException('some args', '__init__ @Box')
             
-        if isinstance(loc, list) and 4 == len(loc):
-            self._loc = loc
-        if isinstance(index, int):
-            self._index = index
+        self._loc = loc
+        self._index = index
 
     @property
     def loc(self):
