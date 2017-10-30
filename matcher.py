@@ -104,7 +104,7 @@ class Matcher:
             near_jacc = 0.
             near_index = None
             for i in range(len(matches)):
-                jacc = jaccard(gt_box, self.default_boxes[i])
+                jacc = jaccard(center2corner(gt_box), center2corner(self.default_boxes[i]))
                 if 0.5 <= jacc:
                     matches[i] = Box(gt_box, gt_label)
                     pos += 1
