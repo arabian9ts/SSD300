@@ -122,7 +122,7 @@ class Matcher:
         indicies = self.extract_highest_indicies(pred_confs, pos*3)
 
         for i in indicies:
-            if classes-1 != np.argmax(pred_confs[i]):
+            if matches[i] is None and classes-1 != np.argmax(pred_confs[i]):
                 matches[i] = Box([], classes-1)
                 neg += 1
 
