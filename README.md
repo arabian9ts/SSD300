@@ -3,10 +3,10 @@ Single Shot MultiBox Detector implemented with TensorFlow
 ## Dependencies ##
 python3.6.1
 * numpy
-* pickle
 * skimage
 * TensorFlow
 * matplotlib
+* OpenCV
 
 ## Usage ##
 1. Import required modules
@@ -24,35 +24,37 @@ img = load_image('./test.jpg')
 img = img.reshape((300, 300, 3))
 ```
 
-3. Prepare TensorFlow placeholder (input images)
-```
-input = tf.placeholder(shape=[None, 300, 300, 3], dtype=tf.float32)
-```
-
-4. Start Session  
-you must just call ssd.eval() !
+3. Start Session  
 ```
 with tf.Session() as sess:
         ssd = SSD300(sess)
         sess.run(tf.global_variables_initializer())
         for ep in range(EPOCH):
-            BATCH_LOSSES = []
-            for ba in range(BATCH):
-                minibatch, actual_data = next_batch(is_training=True)
-                _, _, batch_loc, batch_conf, batch_loss = ssd.eval(minibatch, actual_data, True)
+            ...
 ```
+
+4. Training or Evaluating
+you must just call ssd.eval() !
+```
+...
+
+_, _, batch_loc, batch_conf, batch_loss = ssd.eval(minibatch, actual_data, is_training=True)
+
+...
+```
+
 
 ## Test Training ##
 you have to extract data-set from zip files.
-decompress all zip files in datasets/ and move to VOC2007/ dir.
+decompress all zip files in datasets/ and move to voc2007/ dir.
 ```
-$ ls VOC2007/ | wc -l    #  => 4954
+$ ls voc2007/ | wc -l    #  => 4954
 $ ./setup.sh
 $ python train.py
 ```
 
 ## Present Circumstances ##
-I just implemented ssd300, so its not already done learning-test.  
+I'm checking and testing SSD model, so this model may not be complete.
 
 If I have overlooked something, please tell me.
 
