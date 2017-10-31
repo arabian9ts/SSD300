@@ -48,6 +48,7 @@ from model.base import VGG16
 from model.policy import *
 from model.default_box import *
 from model.tf_material import *
+from model.computation import *
 
 class SSD(VGG16):
 
@@ -162,6 +163,40 @@ class SSD(VGG16):
         return loss, loss_conf, loss_loc, pos, neg, gt_labels, gt_boxes
 
 
+    def _filter(self, pconfs, plocs):
+        """
+        exclude extra boxes.
+
+        Args:
+            pconfs, plocs:
+                confidences and locations whose confidence is in top 200 and filtered by threshold min 0.1.
+        Returns:
+            filtered locations and its labels
+        """
+
+        jacc_th = 0.5
+        det_locs = []
+        det_labels = []
+
+        def jacc_filter(plabel, ploc):
+            for dlabel, dloc in zip(det_labels, det_locs):
+                jacc = jaccard(center2corner(dloc), center2corner(ploc))
+
+                # meaning this is same object
+                if dlabel == plabel and jacc_th < jacc:
+                    return False
+            return True
+
+        for pconf, ploc in zip(pconfs, plocs):
+            plabel = np.argmax(pconf)
+
+            if plabel != classes-1 and jacc_filter(plabel, ploc):
+                det_locs.append(ploc)
+                det_labels.append(plabel)
+
+        return det_locs, det_labels
+        
+
     def detect_objects(self, pred_confs, pred_locs):
         """
         this method returns detected objects list (means high confidences locs and its labels)
@@ -180,11 +215,13 @@ class SSD(VGG16):
         for conf, loc in zip(pred_confs[0], pred_locs[0]):
             hist[np.argmax(conf)] += 1
         print(hist)
-        possibilities = [np.amax(np.exp(conf)) / (np.sum(np.exp(conf)) + 1e-3) for conf in pred_confs[0] if classes-1 != np.argmax(conf)]
+
+        # extract top 200 by confidence
+        possibilities = [np.amax(np.exp(conf)) / (np.sum(np.exp(conf)) + 1e-3) for conf in pred_confs[0]]
         indicies = np.argpartition(possibilities, -200)[-200:]
-        for conf, loc in zip(pred_confs[0][indicies], pred_locs[0][indicies]):
-            if classes-1 != np.argmax(conf):
-                detected_labels.append(np.argmax(conf))
-                detected_locs.append(loc)
+        top200 = np.asarray(possibilities)[indicies]
+        slicer = indicies[0.1 < top200]
         
-        return detected_labels, detected_locs
+        locations, labels = self._filter(pred_confs[0][slicer], pred_locs[0][slicer])
+        
+        return locations, labels

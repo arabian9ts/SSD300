@@ -65,7 +65,7 @@ if __name__ == '__main__':
         reshaped = cv2.resize(img, (300, 300))
         reshaped = reshaped / 255
         pred_confs, pred_locs = ssd.eval(images=[reshaped], actual_data=None, is_training=False)
-        labels, locs = ssd.ssd.detect_objects(pred_confs, pred_locs)
+        locs, labels = ssd.ssd.detect_objects(pred_confs, pred_locs)
         if len(labels) and len(locs):
             for label, loc in zip(labels, locs):
                 loc = center2corner(loc)
@@ -122,13 +122,13 @@ if __name__ == '__main__':
 
             saver.save(sess, './checkpoints/params.ckpt')
 
-            '''
+            
             print('\n*** TEST ***')
             id = np.random.choice(len(keys))
             name = keys[id]
             draw_marker(image_name=name, save=True)
             print('\nSaved Evaled Image')
-            '''
+            
 
             print('\n========== EPOCH: '+str(ep+1)+' END ==========')
             
