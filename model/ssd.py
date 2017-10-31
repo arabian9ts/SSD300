@@ -180,7 +180,7 @@ class SSD(VGG16):
         for conf, loc in zip(pred_confs[0], pred_locs[0]):
             hist[np.argmax(conf)] += 1
         print(hist)
-        possibilities = [np.exp(np.argmax(conf)) / (np.sum(np.exp(conf)) + 1e-3) for conf in pred_confs[0] if classes-1 != np.argmax(conf)]
+        possibilities = [np.amax(np.exp(conf)) / (np.sum(np.exp(conf)) + 1e-3) for conf in pred_confs[0] if classes-1 != np.argmax(conf)]
         indicies = np.argpartition(possibilities, -200)[-200:]
         for conf, loc in zip(pred_confs[0][indicies], pred_locs[0][indicies]):
             if classes-1 != np.argmax(conf):
