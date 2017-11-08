@@ -11,7 +11,7 @@ python3.6.1
 ## Usage ##
 1. Import required modules
 ```
-import tensorboard as tf
+import tensorflow as tf
 import numpy as np
 
 from util.util import *

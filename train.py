@@ -17,7 +17,7 @@ import gc
 import cv2
 import sys
 import datetime
-import tensorboard as tf
+import tensorflow as tf
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt

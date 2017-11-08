@@ -5,7 +5,7 @@ date: 10/18
 author: arabian9ts
 """
 
-import tensorboard as tf
+import tensorflow as tf
 import numpy as np
 
 from model.ssd import *
