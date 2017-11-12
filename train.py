@@ -114,23 +114,19 @@ if __name__ == '__main__':
             _, _, batch_loc, batch_conf, batch_loss = ssd.eval(batch, actual, True)
             BATCH_LOSSES.append(batch_loss)
 
-            print('\n********** BATCH LOSS **********')
-            print('\nLOC LOSS:\n'+str(batch_loc))
-            print('\nCONF LOSS:\n'+str(batch_conf))
-            print('\nTOTAL LOSS: '+str(batch_loss))
-            print('\n========== BATCH: '+str(ba+1)+' / EPOCH: '+str(ep+1)+' END ==========')
+            print('BATCH: {0} / EPOCH: {1}, LOSS: {2}'.format(ba+1, ep+1, batch_loss))
         EPOCH_LOSSES.append(np.mean(BATCH_LOSSES))
         print('\n*** AVERAGE: '+str(EPOCH_LOSSES[-1])+' ***')
 
         saver.save(sess, './checkpoints/params.ckpt')
 
-        
+        """
         print('\n*** TEST ***')
         id = np.random.choice(len(keys))
         name = keys[id]
         draw_marker(image_name=name, save=True)
         print('\nSaved Evaled Image')
-        
+        """
 
         print('\n========== EPOCH: '+str(ep+1)+' END ==========')
         
