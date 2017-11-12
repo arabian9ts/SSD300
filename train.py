@@ -33,7 +33,7 @@ EPOCH_LOSSES = []
 
 if __name__ == '__main__':
     sess = tf.Session()
-    buff = ()
+    buff = []
 
     # load pickle data set annotation
     with open('VOC2007.pkl', 'rb') as f:
@@ -55,7 +55,7 @@ if __name__ == '__main__':
             actual_data.append(data[keys[idx]])
             mini_batch.append(img)
 
-        buff = (mini_batch, actual_data)
+        buff.append((mini_batch, actual_data))
 
 
     def draw_marker(image_name, save):
@@ -105,11 +105,13 @@ if __name__ == '__main__':
     print('\nSTART LEARNING')
     print('==================== '+str(datetime.datetime.now())+' ====================')
 
-    next_batch()
+    for _ in range(5):
+        next_batch()
+
     for ep in range(EPOCH):
         BATCH_LOSSES = []
         for ba in range(BATCH):
-            batch, actual = buff
+            batch, actual = buff.pop(0)
             threading.Thread(name='load', target=next_batch).start()
             _, _, batch_loc, batch_conf, batch_loss = ssd.eval(batch, actual, True)
             BATCH_LOSSES.append(batch_loss)
