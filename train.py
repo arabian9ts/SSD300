@@ -19,18 +19,21 @@ import datetime
 import tensorboard as tf
 import numpy as np
 import pickle
+import threading
 import matplotlib.pyplot as plt
 
+from util.util import *
 from model.SSD300 import *
 
 # ====================== Training Parameters ====================== #
-BATCH_SIZE = 1
-EPOCH = 50
+BATCH_SIZE = 10
+EPOCH = 200
 EPOCH_LOSSES = []
 # ============================== END ============================== #
 
 if __name__ == '__main__':
     sess = tf.Session()
+    buff = ()
 
     # load pickle data set annotation
     with open('VOC2007.pkl', 'rb') as f:
@@ -39,6 +42,7 @@ if __name__ == '__main__':
         BATCH = int(len(keys) / BATCH_SIZE)
 
     def next_batch():
+        global buff
         mini_batch = []
         actual_data = []
         indicies = np.random.choice(len(keys), BATCH_SIZE)
@@ -46,14 +50,12 @@ if __name__ == '__main__':
         for idx in indicies:
             # make images mini batch
 
-            img = tf.read_file('voc2007/'+keys[idx])
-            img = tf.image.decode_jpeg(img, channels=3)
-            img = tf.image.resize_images(img, [300, 300]) / 255.
+            img = load_image('voc2007/'+keys[idx])
 
             actual_data.append(data[keys[idx]])
-            mini_batch.append(sess.run(img))
+            mini_batch.append(img)
 
-        return mini_batch, actual_data
+        buff = (mini_batch, actual_data)
 
 
     def draw_marker(image_name, save):
@@ -103,11 +105,13 @@ if __name__ == '__main__':
     print('\nSTART LEARNING')
     print('==================== '+str(datetime.datetime.now())+' ====================')
 
+    next_batch()
     for ep in range(EPOCH):
         BATCH_LOSSES = []
         for ba in range(BATCH):
-            minibatch, actual_data = next_batch()
-            _, _, batch_loc, batch_conf, batch_loss = ssd.eval(minibatch, actual_data, True)
+            batch, actual = buff
+            threading.Thread(name='load', target=next_batch).start()
+            _, _, batch_loc, batch_conf, batch_loss = ssd.eval(batch, actual, True)
             BATCH_LOSSES.append(batch_loss)
 
             print('\n********** BATCH LOSS **********')
