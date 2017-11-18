@@ -10,12 +10,12 @@ author: arabian9ts
 classes = 21
 
 # the number of boxes per feature map
-boxes = [3, 6, 6, 6, 6, 6,]
+boxes = [6, 6, 6, 6, 6, 6,]
 
 # default box ratios
 # each length should be matches boxes[index]
 box_ratios = [
-    [1.0, 0.5, 2.0],
+    [1.0, 1.0, 2.0, 3.0, 0.5, 1.0/3.0],
     [1.0, 1.0, 2.0, 3.0, 0.5, 1.0/3.0],
     [1.0, 1.0, 2.0, 3.0, 0.5, 1.0/3.0],
     [1.0, 1.0, 2.0, 3.0, 0.5, 1.0/3.0],

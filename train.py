@@ -27,7 +27,7 @@ from model.SSD300 import *
 
 # ====================== Training Parameters ====================== #
 BATCH_SIZE = 10
-EPOCH = 200
+EPOCH = 500
 EPOCH_LOSSES = []
 # ============================== END ============================== #
 
@@ -122,13 +122,13 @@ if __name__ == '__main__':
 
         saver.save(sess, './checkpoints/params.ckpt')
 
-        """
+        
         print('\n*** TEST ***')
         id = np.random.choice(len(keys))
         name = keys[id]
         draw_marker(image_name=name, save=True)
         print('\nSaved Evaled Image')
-        """
+        
 
         print('\n========== EPOCH: '+str(ep+1)+' END ==========')
         

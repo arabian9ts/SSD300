@@ -41,7 +41,7 @@ class SSD300:
         loss, loss_conf, loss_loc, self.pos, self.neg, self.gt_labels, self.gt_boxes = self.ssd.loss(len(self.dboxes))
         self.train_set = [loss, loss_conf, loss_loc]
         # optimizer = tf.train.AdamOptimizer(0.05)
-        optimizer = tf.train.AdamOptimizer(learning_rate=0.05, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False, name='Adam')
+        optimizer = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999, epsilon=1e-08, use_locking=False, name='Adam')
         self.train_step = optimizer.minimize(loss)
 
         # provides matching method
