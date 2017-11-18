@@ -13,25 +13,27 @@ matplotlib.use('Agg')
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL']='2'
 
-import gc
 import cv2
 import sys
 import datetime
 import tensorflow as tf
 import numpy as np
 import pickle
+import threading
 import matplotlib.pyplot as plt
 
 from util.util import *
 from model.SSD300 import *
 
 # ====================== Training Parameters ====================== #
-BATCH_SIZE = 20
-EPOCH = 50
+BATCH_SIZE = 10
+EPOCH = 200
 EPOCH_LOSSES = []
 # ============================== END ============================== #
 
 if __name__ == '__main__':
+    sess = tf.Session()
+    buff = []
 
     # load pickle data set annotation
     with open('VOC2007.pkl', 'rb') as f:
@@ -40,19 +42,20 @@ if __name__ == '__main__':
         BATCH = int(len(keys) / BATCH_SIZE)
 
     def next_batch():
+        global buff
         mini_batch = []
         actual_data = []
         indicies = np.random.choice(len(keys), BATCH_SIZE)
 
         for idx in indicies:
             # make images mini batch
+
             img = load_image('voc2007/'+keys[idx])
+
             actual_data.append(data[keys[idx]])
-            
-            img = img.reshape((300, 300, 3))
             mini_batch.append(img)
 
-        return mini_batch, actual_data
+        buff.append((mini_batch, actual_data))
 
 
     def draw_marker(image_name, save):
@@ -81,67 +84,64 @@ if __name__ == '__main__':
 
 
     # tensorflow session
-    with tf.Session() as sess:
-        ssd = SSD300(sess)
-        sess.run(tf.global_variables_initializer())
+    ssd = SSD300(sess)
+    sess.run(tf.global_variables_initializer())
 
-        # parameter saver
-        saver = tf.train.Saver()
+    # parameter saver
+    saver = tf.train.Saver()
 
-        # eval and predict object on a specified image.
-        if 2 == len(sys.argv):
-            saver.restore(sess, './checkpoints/params.ckpt')
-            img = draw_marker(sys.argv[1], save=False)
-            cv2.namedWindow("img", cv2.WINDOW_NORMAL)
-            cv2.imshow("img", img)
-            cv2.waitKey(0)
-            cv2.destroyAllWindows()
-            sys.exit()
+    # eval and predict object on a specified image.
+    if 2 == len(sys.argv):
+        saver.restore(sess, './checkpoints/params.ckpt')
+        img = draw_marker(sys.argv[1], save=False)
+        cv2.namedWindow("img", cv2.WINDOW_NORMAL)
+        cv2.imshow("img", img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+        sys.exit()
 
-        # saver.restore(sess, './checkpoints/params.ckpt')
+    # saver.restore(sess, './checkpoints/params.ckpt')
 
-        print('\nSTART LEARNING')
-        print('==================== '+str(datetime.datetime.now())+' ====================')
+    print('\nSTART LEARNING')
+    print('==================== '+str(datetime.datetime.now())+' ====================')
 
-        for ep in range(EPOCH):
-            BATCH_LOSSES = []
-            for ba in range(BATCH):
-                minibatch, actual_data = next_batch()
-                _, _, batch_loc, batch_conf, batch_loss = ssd.eval(minibatch, actual_data, True)
-                BATCH_LOSSES.append(batch_loss)
-                del minibatch
-                gc.collect()
+    for _ in range(5):
+        next_batch()
 
-                print('\n********** BATCH LOSS **********')
-                print('\nLOC LOSS:\n'+str(batch_loc))
-                print('\nCONF LOSS:\n'+str(batch_conf))
-                print('\nTOTAL LOSS: '+str(batch_loss))
-                print('\n========== BATCH: '+str(ba+1)+' / EPOCH: '+str(ep+1)+' END ==========')
-            EPOCH_LOSSES.append(np.mean(BATCH_LOSSES))
-            print('\n*** AVERAGE: '+str(EPOCH_LOSSES[-1])+' ***')
+    for ep in range(EPOCH):
+        BATCH_LOSSES = []
+        for ba in range(BATCH):
+            batch, actual = buff.pop(0)
+            threading.Thread(name='load', target=next_batch).start()
+            _, _, batch_loc, batch_conf, batch_loss = ssd.eval(batch, actual, True)
+            BATCH_LOSSES.append(batch_loss)
 
-            saver.save(sess, './checkpoints/params.ckpt')
+            print('BATCH: {0} / EPOCH: {1}, LOSS: {2}'.format(ba+1, ep+1, batch_loss))
+        EPOCH_LOSSES.append(np.mean(BATCH_LOSSES))
+        print('\n*** AVERAGE: '+str(EPOCH_LOSSES[-1])+' ***')
 
-            
-            print('\n*** TEST ***')
-            id = np.random.choice(len(keys))
-            name = keys[id]
-            draw_marker(image_name=name, save=True)
-            print('\nSaved Evaled Image')
-            
+        saver.save(sess, './checkpoints/params.ckpt')
 
-            print('\n========== EPOCH: '+str(ep+1)+' END ==========')
-            
-        print('\nEND LEARNING')
+        """
+        print('\n*** TEST ***')
+        id = np.random.choice(len(keys))
+        name = keys[id]
+        draw_marker(image_name=name, save=True)
+        print('\nSaved Evaled Image')
+        """
 
+        print('\n========== EPOCH: '+str(ep+1)+' END ==========')
         
-        saver.save(sess, './params_final.ckpt')
+    print('\nEND LEARNING')
 
-        plt.xlabel('Epoch')
-        plt.ylabel('Loss')
-        plt.plot(np.array(range(EPOCH)), EPOCH_LOSSES)
-        plt.grid()
-        plt.savefig("loss.png")
-        plt.show()
+    
+    saver.save(sess, './params_final.ckpt')
 
-        print('==================== '+str(datetime.datetime.now())+' ====================')
+    plt.xlabel('Epoch')
+    plt.ylabel('Loss')
+    plt.plot(np.array(range(EPOCH)), EPOCH_LOSSES)
+    plt.grid()
+    plt.savefig("loss.png")
+    plt.show()
+
+    print('==================== '+str(datetime.datetime.now())+' ====================')

@@ -174,7 +174,7 @@ class SSD(VGG16):
             filtered locations and its labels
         """
 
-        jacc_th = 0.5
+        jacc_th = 0.3
         det_locs = []
         det_labels = []
 
