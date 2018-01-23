@@ -27,7 +27,7 @@ from model.SSD300 import *
 
 # ====================== Training Parameters ====================== #
 BATCH_SIZE = 10
-EPOCH = 500
+EPOCH = 100
 EPOCH_LOSSES = []
 # ============================== END ============================== #
 

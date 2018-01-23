@@ -18,8 +18,8 @@ def scale(k):
     Args: feature map number
     Returns: scale
     """
-    s_min = 0.05
-    s_max = 0.8
+    s_min = 0.1
+    s_max = 0.9
     m = 6.0
     s_k = s_min + (s_max - s_min) * k / (m - 1.0)
     return s_k
@@ -65,9 +65,7 @@ def generate_boxes(fmap_shapes):
                 for i, ratio in enumerate(ratios):
                     s = s_k
 
-                    if 0 == index:
-                        s = 0.105
-                    elif 0 == i:
+                    if 0 == i:
                         s = np.sqrt(s_k*s_k1)
                     
                     box_width = s * np.sqrt(ratio)
