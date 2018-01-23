@@ -23,6 +23,7 @@ import threading
 import matplotlib.pyplot as plt
 
 from util.util import *
+from tqdm import trange
 from model.SSD300 import *
 
 # ====================== Training Parameters ====================== #
@@ -110,13 +111,13 @@ if __name__ == '__main__':
 
     for ep in range(EPOCH):
         BATCH_LOSSES = []
-        for ba in range(BATCH):
+        for ba in trange(BATCH):
             batch, actual = buff.pop(0)
             threading.Thread(name='load', target=next_batch).start()
             _, _, batch_loc, batch_conf, batch_loss = ssd.eval(batch, actual, True)
             BATCH_LOSSES.append(batch_loss)
 
-            print('BATCH: {0} / EPOCH: {1}, LOSS: {2}'.format(ba+1, ep+1, batch_loss))
+            # print('BATCH: {0} / EPOCH: {1}, LOSS: {2}'.format(ba+1, ep+1, batch_loss))
         EPOCH_LOSSES.append(np.mean(BATCH_LOSSES))
         print('\n*** AVERAGE: '+str(EPOCH_LOSSES[-1])+' ***')
 
