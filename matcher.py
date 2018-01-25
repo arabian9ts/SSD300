@@ -78,7 +78,7 @@ class Matcher:
             actual_labels: answer class labels
             actual_locs: answer box locations
         Returns:
-            postive_list: if pos -> 1 else 0
+            postive_list: if pos -> 1 else -> 0
             negative_list: if neg and label is not classes(not unknown class) 1 else 0
             expanded_gt_labels: gt_label if pos else classes
             expanded_gt_locs: gt_locs if pos else [0, 0, 0, 0]
@@ -92,6 +92,7 @@ class Matcher:
         expanded_gt_locs = []
         matches = []
 
+        matched = []
         # generate serializationd matching boxes
         for i in range(len(boxes)):
             for _ in range(self.fmap_shapes[i][1]):
@@ -108,6 +109,7 @@ class Matcher:
                 if 0.5 <= jacc:
                     matches[i] = Box(gt_box, gt_label)
                     pos += 1
+                    matched.append(gt_label)
                 else:
                     if near_jacc < jacc:
                         near_miss = jacc
@@ -115,7 +117,7 @@ class Matcher:
             
             # prevent pos from becoming 0 <=> loss_loc is 0
             # force to match most near box to ground truth box
-            if near_index is not None and matches[near_index] is None:
+            if 0 == len(matched) and near_index is not None and matches[near_index] is None:
                 matches[near_index] = Box(gt_box, gt_label)
                 pos += 1
             
