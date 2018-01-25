@@ -211,7 +211,7 @@ class SSD(VGG16):
 
         detected_locs = []
         detected_labels = []
-        hist = [0 for _ in range(21)]
+        hist = [0 for _ in range(classes)]
         for conf, loc in zip(pred_confs[0], pred_locs[0]):
             hist[np.argmax(conf)] += 1
         print(hist)
@@ -220,7 +220,7 @@ class SSD(VGG16):
         possibilities = [np.amax(np.exp(conf)) / (np.sum(np.exp(conf)) + 1e-3) for conf in pred_confs[0]]
         indicies = np.argpartition(possibilities, -200)[-200:]
         top200 = np.asarray(possibilities)[indicies]
-        slicer = indicies[0.1 < top200]
+        slicer = indicies[0.7 < top200]
         
         locations, labels = self._filter(pred_confs[0][slicer], pred_locs[0][slicer])
         

@@ -23,12 +23,14 @@ import threading
 import matplotlib.pyplot as plt
 
 from util.util import *
+from tqdm import trange
 from model.SSD300 import *
 
 # ====================== Training Parameters ====================== #
 BATCH_SIZE = 10
-EPOCH = 200
+EPOCH = 100
 EPOCH_LOSSES = []
+SHUFFLED_INDECES = []
 # ============================== END ============================== #
 
 if __name__ == '__main__':
@@ -42,12 +44,17 @@ if __name__ == '__main__':
         BATCH = int(len(keys) / BATCH_SIZE)
 
     def next_batch():
-        global buff
+        global buff, BATCH_SIZE ,SHUFFLED_INDECES
         mini_batch = []
         actual_data = []
-        indicies = np.random.choice(len(keys), BATCH_SIZE)
 
-        for idx in indicies:
+        if 0 == len(SHUFFLED_INDECES):
+            SHUFFLED_INDECES = list(np.random.permutation(len(keys)))
+
+        indices = SHUFFLED_INDECES[:min(BATCH_SIZE, len(SHUFFLED_INDECES))]
+        del SHUFFLED_INDECES[:min(BATCH_SIZE, len(SHUFFLED_INDECES))]
+
+        for idx in indices:
             # make images mini batch
 
             img = load_image('voc2007/'+keys[idx])
@@ -102,33 +109,35 @@ if __name__ == '__main__':
 
     # saver.restore(sess, './checkpoints/params.ckpt')
 
+    SHUFFLED_INDECES = list(np.random.permutation(len(keys)))
+
     print('\nSTART LEARNING')
     print('==================== '+str(datetime.datetime.now())+' ====================')
 
     for _ in range(5):
         next_batch()
-
+        
     for ep in range(EPOCH):
         BATCH_LOSSES = []
-        for ba in range(BATCH):
+        for ba in trange(BATCH):
             batch, actual = buff.pop(0)
             threading.Thread(name='load', target=next_batch).start()
             _, _, batch_loc, batch_conf, batch_loss = ssd.eval(batch, actual, True)
             BATCH_LOSSES.append(batch_loss)
 
-            print('BATCH: {0} / EPOCH: {1}, LOSS: {2}'.format(ba+1, ep+1, batch_loss))
+            # print('BATCH: {0} / EPOCH: {1}, LOSS: {2}'.format(ba+1, ep+1, batch_loss))
         EPOCH_LOSSES.append(np.mean(BATCH_LOSSES))
         print('\n*** AVERAGE: '+str(EPOCH_LOSSES[-1])+' ***')
 
         saver.save(sess, './checkpoints/params.ckpt')
 
-        """
+        
         print('\n*** TEST ***')
         id = np.random.choice(len(keys))
         name = keys[id]
         draw_marker(image_name=name, save=True)
         print('\nSaved Evaled Image')
-        """
+        
 
         print('\n========== EPOCH: '+str(ep+1)+' END ==========')
         
