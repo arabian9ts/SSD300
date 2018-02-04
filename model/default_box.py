@@ -65,7 +65,7 @@ def generate_boxes(fmap_shapes):
                 for i, ratio in enumerate(ratios):
                     s = s_k
 
-                    if 0 == i:
+                    if 1.0 == s:
                         s = np.sqrt(s_k*s_k1)
                     
                     box_width = s * np.sqrt(ratio)
