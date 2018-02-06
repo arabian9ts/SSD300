@@ -208,7 +208,7 @@ class SSD(VGG16):
         """
 
         label = candidates[:,4]
-        boxes = candidates[label<classes]
+        boxes = candidates[label<classes-1]
 
         if len(boxes) == 0:
             return []
