@@ -72,6 +72,7 @@ if __name__ == '__main__':
         img = cv2.imread('./voc2007/'+image_name, 1)
         h = img.shape[0]
         w = img.shape[1]
+        fontType = cv2.FONT_HERSHEY_SIMPLEX
         reshaped = cv2.resize(img, (300, 300))
         reshaped = reshaped / 255
         pred_confs, pred_locs = ssd.eval(images=[reshaped], actual_data=None, is_training=False)
@@ -81,6 +82,7 @@ if __name__ == '__main__':
                 loc = center2corner(loc)
                 loc = convert2diagonal_points(loc)
                 cv2.rectangle(img, (int(loc[0]*w), int(loc[1]*h)), (int(loc[2]*w), int(loc[3]*h)), (0, 0, 255), 1)
+                cv2.putText(img, str(int(label)), (int(loc[0]*w), int(loc[1]*h)), fontType, 0.7, (0, 0, 255), 1)
 
         if save:
             if not os.path.exists('./evaluated'):
