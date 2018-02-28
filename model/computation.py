@@ -5,6 +5,7 @@ date: 10/1
 author: arabian9ts
 """
 
+import numpy as np
 
 def intersection(rect1, rect2):
     """
@@ -49,7 +50,7 @@ def corner2center(rect):
     center_x = (2 * rect[0] + rect[2]) * 0.5
     center_y = (2 * rect[1] + rect[3]) * 0.5
 
-    return [center_x, center_y, abs(rect[2]), abs(rect[3])]
+    return np.array([center_x, center_y, abs(rect[2]), abs(rect[3])])
 
 
 def center2corner(rect):
@@ -59,7 +60,7 @@ def center2corner(rect):
     corner_x = rect[0] - rect[2] * 0.5
     corner_y = rect[1] - rect[3] * 0.5
 
-    return [corner_x, corner_y, abs(rect[2]), abs(rect[3])]
+    return np.array([corner_x, corner_y, abs(rect[2]), abs(rect[3])])
 
 
 def convert2diagonal_points(rect):
@@ -73,7 +74,7 @@ def convert2diagonal_points(rect):
         output format is...
         [ top_left_x, top_left_y, bottom_right_x, bottom_right_y ]
     """
-    return [rect[0], rect[1], rect[0]+rect[2], rect[1]+rect[3]]
+    return np.array([rect[0], rect[1], rect[0]+rect[2], rect[1]+rect[3]])
 
 
 def convert2wh(rect):
@@ -87,4 +88,4 @@ def convert2wh(rect):
         output format is...
         [ top_left_x, top_left_y, width, height ]
     """
-    return [rect[0], rect[1], rect[2]-rect[0], rect[3]-rect[1]]
+    return np.array([rect[0], rect[1], rect[2]-rect[0], rect[3]-rect[1]])

@@ -121,7 +121,7 @@ class Matcher:
                 matches[near_index] = Box(gt_box, gt_label)
                 pos += 1
             
-        indicies = self.extract_highest_indicies(pred_confs, pos*3)
+        indicies = self.extract_highest_indicies(pred_confs, pos*5)
 
         for i in indicies:
             if matches[i] is None and classes-1 != np.argmax(pred_confs[i]):
