@@ -105,25 +105,17 @@ class Matcher:
             near_jacc = 0.
             near_index = None
             for i in range(len(matches)):
-                jacc = jaccard(center2corner(gt_box), center2corner(self.default_boxes[i]))
+                jacc = jaccard(gt_box, self.default_boxes[i])
                 if 0.5 <= jacc:
                     matches[i] = Box(gt_box, gt_label)
                     pos += 1
                     matched.append(gt_label)
-                else:
-                    if near_jacc < jacc:
-                        near_miss = jacc
-                        near_index = i
-            
-            # prevent pos from becoming 0 <=> loss_loc is 0
-            # force to match most near box to ground truth box
-            if 0 == len(matched) and near_index is not None and matches[near_index] is None:
-                matches[near_index] = Box(gt_box, gt_label)
-                pos += 1
-            
-        indicies = self.extract_highest_indicies(pred_confs, pos*5)
 
+        neg_pos = 5
+        indicies = self.extract_highest_indicies(pred_confs, pos*neg_pos)
         for i in indicies:
+            if neg > pos*neg_pos:
+                    break
             if matches[i] is None and classes-1 != np.argmax(pred_confs[i]):
                 matches[i] = Box([], classes-1)
                 neg += 1

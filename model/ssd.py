@@ -71,7 +71,8 @@ class SSD(VGG16):
         self.base = super().build(input, is_training)
         
         self.conv6 = convolution(self.base, 'conv6')
-        self.conv7 = convolution(self.conv6, 'conv7')
+        self.pool6 = pooling(self.conv6, 'pool6')
+        self.conv7 = convolution(self.pool6, 'conv7')
 
         self.conv8_1 = convolution(self.conv7, 'conv8_1')
         self.conv8_2 = convolution(self.conv8_1, 'conv8_2', ksize=3, stride=2)
@@ -220,8 +221,8 @@ class SSD(VGG16):
         x2 = boxes[:,2] + x1
         y2 = boxes[:,3] + y1
 
-        area = (x2 - x1 + 1) * (y2 - y1 + 1)
-        idxs = np.argsort(y2)
+        area = (boxes[:,2]) * (boxes[:,3])
+        idxs = np.argsort(x1)
 
         while len(idxs) > 0:
             last = len(idxs) - 1
@@ -238,8 +239,8 @@ class SSD(VGG16):
                 xx2 = min(x2[i], x2[j])
                 yy2 = min(y2[i], y2[j])
     
-                w = max(0, xx2 - xx1 + 1)
-                h = max(0, yy2 - yy1 + 1)
+                w = max(0, xx2 - xx1)
+                h = max(0, yy2 - yy1)
 
                 # overlap of current box and those in area list
                 overlap = float(w * h) / area[j]
@@ -271,21 +272,24 @@ class SSD(VGG16):
         hist = [0 for _ in range(classes)]
         for conf, loc in zip(pred_confs[0], pred_locs[0]):
             hist[np.argmax(conf)] += 1
-        print(hist)
+        # print(hist)
 
         # extract top 200 by confidence
         possibilities = [np.amax(np.exp(conf)) / (np.sum(np.exp(conf)) + 1e-3) for conf in pred_confs[0]]
         indicies = np.argpartition(possibilities, -200)[-200:]
-        # top200 = np.asarray(possibilities)[indicies]
-        # slicer = indicies[0.7 < top200]
-        # locations, labels = self._filter(pred_confs[0][slicer], pred_locs[0][slicer])
+        top200 = np.asarray(possibilities)[indicies]
+        slicer = indicies[0.9 < top200]
+        locations, labels = self._filter(pred_confs[0][slicer], pred_locs[0][slicer])
 
-        locations, labels = pred_locs[0][indicies], np.argmax(pred_confs[0][indicies], axis=1)
+        locations, labels = pred_locs[0][slicer], np.argmax(pred_confs[0][slicer], axis=1)
         labels = np.asarray(labels).reshape(len(labels), 1)
         with_labels = np.concatenate((locations, labels), axis=1)
         
         # labels, locations = image.non_max_suppression(boxes, possibilities, 10)
-        filtered = self.non_maximum_suppression(with_labels, 0.5)
+        filtered = self.non_maximum_suppression(with_labels, 0.1)
         # locations, labels = pred_confs[0][indices], pred_locs[0][indices]
+        if len(filtered) == 0:
+            filtered = np.zeros((4, 5))
 
         return filtered[:,:4], filtered[:,4]
+        #return locations, labels

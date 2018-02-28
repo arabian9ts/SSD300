@@ -48,11 +48,11 @@ class VGG16:
 
         self.conv4_1 = convolution(self.pool3, 'conv4_1')
         self.conv4_2 = convolution(self.conv4_1, 'conv4_2')
-        self.conv4_3 = convolution(self.conv4_2, 'conv4_3')
-        self.pool4 = pooling(self.conv4_3, 'pool4')
+        # self.conv4_3 = convolution(self.conv4_2, 'conv4_3')
+        # self.pool4 = pooling(self.conv4_3, 'pool4')
 
-        self.conv5_1 = convolution(self.pool4, 'conv5_1')
-        self.conv5_2 = convolution(self.conv5_1, 'conv5_2')
+        # self.conv5_1 = convolution(self.pool4, 'conv5_1')
+        # self.conv5_2 = convolution(self.conv5_1, 'conv5_2')
         # self.conv5_3 = convolution(self.conv5_2, 'conv5_3')
         # self.pool5 = self.pooling(self.conv5_3, 'pool5')
 
@@ -60,6 +60,6 @@ class VGG16:
         # self.fc7 = self.fully_connection(self.fc6, Activation.relu, 'fc7')
         # self.fc8 = self.fully_connection(self.fc7, Activation.softmax, 'fc8')
 
-        self.prob = self.conv5_2
+        self.prob = self.conv4_2
 
         return self.prob
