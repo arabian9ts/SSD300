@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 
 from util.util import *
 from tqdm import trange
-from model.SSD300 import *
+from model.ssd300 import *
 
 # ====================== Training Parameters ====================== #
 BATCH_SIZE = 10

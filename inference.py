@@ -8,7 +8,7 @@ author: arabian9ts
 import cv2
 import sys
 from util.util import *
-from model.SSD300 import *
+from model.ssd300 import *
 
 def inference(image_name):
     if image_name is None:
