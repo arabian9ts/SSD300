@@ -24,7 +24,7 @@ def preprocess(path):
     return img, w, h, c
 
 
-def deprocess(x):
+def deprocess(x, w, h):
     """
     restore processed image
 
@@ -34,4 +34,5 @@ def deprocess(x):
     # x = x[:, :, ::-1]
     x *= 255.
     x = np.clip(x, 0, 255).astype('uint8')
+    x = imresize(x, (h, w))
     return x

@@ -18,7 +18,7 @@ def inference(image_name):
     img, w, h, _, = preprocess('./voc2007/'+image_name)
     pred_confs, pred_locs = ssd.infer(images=[img])
     locs, labels = ssd.ssd.detect_objects(pred_confs, pred_locs)
-    img = deprocess(img)
+    img = deprocess(img, w, h)
     if len(labels) and len(locs):
         for label, loc in zip(labels, locs):
             loc = center2corner(loc)
