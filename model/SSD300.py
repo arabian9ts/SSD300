@@ -47,12 +47,13 @@ class SSD300:
         # provides matching method
         self.matcher = Matcher(fmap_shapes, self.dboxes)
 
-    # evaluate loss
-    def eval(self, images, actual_data, is_training):
-        if not is_training:
-            feature_maps, pred_confs, pred_locs = self.sess.run(self.pred_set, feed_dict={self.input: images})
-            return pred_confs, pred_locs
+    # inference process
+    def infer(self, images):
+        feature_maps, pred_confs, pred_locs = self.sess.run(self.pred_set, feed_dict={self.input: images})
+        return pred_confs, pred_locs
 
+    # training process
+    def train(self, images, actual_data):
         # ================ RESET / EVAL ================ #
         positives = []
         negatives = []
