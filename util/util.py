@@ -6,19 +6,33 @@ date: 9/17
 author: arabian9ts
 """
 
-import numpy
-import skimage
-import skimage.io
-import skimage.transform
+import numpy as np
+from scipy.misc import imread, imresize
 
-def load_image(path):
+def preprocess(path):
     """
     load specified image
 
     Args: image path
-    Return: resized image
+    Return: resized image, its size and channel
     """
-    img = skimage.io.imread(path)
-    img = img / 255.
-    resized_img = skimage.transform.resize(img, (300, 300))
-    return numpy.array(resized_img, dtype=numpy.float32)
+    img = imread(path)
+    h, w, c = img.shape
+    img = imresize(img, (300, 300))
+    img = img[:, :, ::-1].astype('float32')
+    img /= 255.
+    return img, w, h, c
+
+
+def deprocess(x, w, h):
+    """
+    restore processed image
+
+    Args: processed image
+    Return: restored image
+    """
+    # x = x[:, :, ::-1]
+    x *= 255.
+    x = np.clip(x, 0, 255).astype('uint8')
+    x = imresize(x, (h, w))
+    return x
